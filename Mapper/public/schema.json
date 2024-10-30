@@ -24,7 +24,7 @@
           "primaryKeys": ["Key3"]
         },
         {
-          "name": "Table3",
+          "name": "Table3 in Namespace3",
           "note": "This is Table3",
           "tag": "Tag3",
           "columns": [
@@ -43,7 +43,7 @@
       "name": "Namespace2",
       "tables": [
         {
-          "name": "Table4",
+          "name": "Table4 in namespace 2",
           "note": "This is Table4",
           "tag": "Tag4",
           "columns": [
@@ -52,7 +52,7 @@
           "primaryKeys": ["Key5"]
         },
         {
-          "name": "Table5",
+          "name": "Table5 in namespace 2",
           "note": "This is Table5",
           "tag": "Tag5",
           "columns": [

@@ -1,155 +1,177 @@
-import React, { useEffect, useState } from 'react';
-import { Button, TextField, Select, MenuItem, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { useEffect, useState } from "react";
+import { ThemeProvider } from "@mui/material/styles";
+import theme from "../../../theme/theme";
+import { Table, Relation, DataType,RelationSelection } from "../interfaces/interfaces";
+import { Select, MenuItem, Box, SelectChangeEvent, Button } from "@mui/material";
+import TableEditForm from "./TableEditForm";
+import AddRelationPopUp from "./AddRelationPopUp";
 
 const Home = () => {
-    const [data, setData] = useState<any>(null); // Store fetched data
-    const [selectedNamespace, setSelectedNamespace] = useState('');
-    const [selectedTable, setSelectedTable] = useState('');
-    const [openPopup, setOpenPopup] = useState(false);
+ 
 
-    useEffect(() => {
-        fetch('public/schema.json')
-            .then(response => response.json())
-            .then(jsonData => {
-                setData(jsonData);
-                setSelectedNamespace(jsonData.namespaces[0]?.name);
-                setSelectedTable(jsonData.namespaces[0]?.tables[0]?.name);
-            })
-            .catch(error => console.error('Error fetching data:', error));
-    }, []);
+  const [data, setData] = useState<DataType | null>(null);
+  const [selectedNamespace, setSelectedNamespace] = useState("");
+  const [selectedTable, setSelectedTable] = useState("");
+  const [openPopup, setOpenPopup] = useState(false);
 
-    if (!data) {
-        return <div>Loading...</div>; // Handle loading state
-    }
-
-    const currentNamespace = data.namespaces.find((ns: any) => ns.name === selectedNamespace);
-    const tables = currentNamespace ? currentNamespace.tables : [];
-    const handleNamespaceChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-        setSelectedNamespace(event.target.value as string);
-        const namespace = data.namespaces.find((ns: any) => ns.name === event.target.value);
-        if (namespace && namespace.tables.length > 0) {
-            setSelectedTable(namespace.tables[0].name);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("schema.json");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const jsonData = await response.json();
+        setData(jsonData);
+        setSelectedNamespace(jsonData.namespaces[0]?.name || "");
+        setSelectedTable(jsonData.namespaces[0]?.tables[0]?.name || "");
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     };
 
-    const handleTableChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-        setSelectedTable(event.target.value as string);
-    };
+    fetchData();
+  }, []);
 
-    const handleAddRelation = () => {
-        setOpenPopup(true);
-    };
+  if (!data) {
+    return <Box>Loading...</Box>;
+  }
 
-    const handleClosePopup = () => {
-        setOpenPopup(false);
-    };
+  const currentNamespace = data.namespaces.find(
+    (namespace) => namespace.name === selectedNamespace
+  );
 
-    return (
-        <div>
-            {/* Namespace Dropdown */}
-            <div>
-                <Select value={selectedNamespace} onChange={handleNamespaceChange}>
-                    {data.namespaces.map((ns: any) => (
-                        <MenuItem key={ns.name} value={ns.name}>
-                            {ns.name}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </div>
+  const currentTable = currentNamespace?.tables.find((table) => table.name === selectedTable);
 
-            {/* Tables Section */}
-            <div>
-                <h3>Tables</h3>
-                <Select value={selectedTable} onChange={handleTableChange}>
-                    {tables.map((table: any) => (
-                        <MenuItem key={table.name} value={table.name}>
-                            {table.name}
-                        </MenuItem>
-                    ))}
-                </Select>
+  const handleNamespaceChange = (event: SelectChangeEvent<string>) => {
+    const namespaceName = event.target.value;
+    setSelectedNamespace(namespaceName);
+    const namespace = data.namespaces.find((ns) => ns.name === namespaceName);
+    if (namespace && namespace.tables.length > 0) {
+      setSelectedTable(namespace.tables[0].name);
+    }
+  };
 
-                <Button variant="contained" color="primary">
-                    Save changes
-                </Button>
-            </div>
+  const handleTableChange = (event: SelectChangeEvent<string>) => {
+    setSelectedTable(event.target.value as string);
+  };
 
-            {/* Columns Section */}
-            <div>
-                <h3>Columns</h3>
-                {tables
-                    .find((table: any) => table.name === selectedTable)
-                    ?.columns.map((col: any) => (
-                        <div key={col.name}>
-                            <TextField
-                                label={col.name}
-                                helperText={`Type: ${col.type}, Note: ${col.note}, Tag: ${col.tag}`}
-                                fullWidth
-                            />
-                        </div>
-                    ))}
-            </div>
+  const handleFormSubmit = (updatedTableData: Table) => {
+    const updatedData = { ...data };
+    const namespace = updatedData.namespaces.find((ns) => ns.name === selectedNamespace);
 
-            {/* Primary Keys Section */}
-            <div>
-                <h3>Primary Keys</h3>
-                {tables
-                    .find((table: any) => table.name === selectedTable)
-                    ?.primaryKeys.map((key: string) => (
-                        <div key={key}>
-                            <TextField label={key} fullWidth />
-                        </div>
-                        
-                    ))}
-            </div>
+    if (namespace) {
+      const tableIndex = namespace.tables.findIndex((table) => table.name === selectedTable);
+      if (tableIndex !== -1) {
+        namespace.tables[tableIndex] = updatedTableData;
+        setData(updatedData);
+      }
+    }
+  };
 
-            {/* Relations Section */}
-            <div>
-                <h3>Relations</h3>
-                {currentNamespace.relations.map((relation: any, index: number) => (
-                    <div key={index}>
-                        <p>
-                            {relation.fromTable}.{relation.fromColumn} → {relation.toTable}.{relation.toColumn}
-                        </p>
-                    </div>
-                ))}
-            </div>
+  const handleAddRelation = () => {
+    setOpenPopup(true);
+  };
 
-            {/* Button to Add Relation */}
-            <Button variant="contained" color="secondary" onClick={handleAddRelation}>
-                Add Relation
-            </Button>
+  const handleClosePopup = () => {
+    setOpenPopup(false);
+  };
 
-            {/* Popup for adding relations */}
-            <Dialog open={openPopup} onClose={handleClosePopup}>
-                <DialogTitle>Add Relation</DialogTitle>
-                <DialogContent>
-                    <Select value={selectedNamespace} onChange={handleNamespaceChange}>
-                        {data.namespaces.map((ns: any) => (
-                            <MenuItem key={ns.name} value={ns.name}>
-                                {ns.name}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                    <Select value={selectedTable} onChange={handleTableChange}>
-                        {tables.map((table: any) => (
-                            <MenuItem key={table.name} value={table.name}>
-                                {table.name}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                    {/* Add other fields for defining relations as necessary */}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClosePopup} color="primary">
-                        Close
-                    </Button>
-                    <Button onClick={handleClosePopup} color="primary">
-                        Save changes
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </div>
-    );
+const handleRelationFormSubmit = (
+  from: RelationSelection,
+  to: RelationSelection
+) => {
+  const updatedData = { ...data }; 
+  const fromNamespace = updatedData.namespaces.find(ns => ns.name === from.namespace);
+  const toNamespace = updatedData.namespaces.find(ns => ns.name === to.namespace);
+
+  if (fromNamespace && toNamespace) {
+    fromNamespace.relations.push({
+      fromTable: from.table,
+      fromColumn: from.column,
+      toTable: to.table,
+      toColumn: to.column,
+    });
+
+    toNamespace.relations.push({
+      fromTable: to.table,
+      fromColumn: to.column,
+      toTable: from.table,
+      toColumn: from.column,
+    });
+
+    setData(updatedData); 
+  } else {
+    console.error('One or both namespaces not found'); 
+  }
+
+  setOpenPopup(false); 
+};
+
+
+  return (
+    <ThemeProvider theme={theme}>
+      <Box sx={{ p: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent:"space-around",
+            gap: 2,
+            pb: 4,
+          }}
+        >
+          <Select value={selectedNamespace} onChange={handleNamespaceChange} fullWidth>
+            {data.namespaces.map((namespace) => (
+              <MenuItem key={namespace.name} value={namespace.name}>
+                {namespace.name}
+              </MenuItem>
+            ))}
+          </Select>
+          <Select value={selectedTable} onChange={handleTableChange} fullWidth>
+            {currentNamespace?.tables.map((table) => (
+              <MenuItem key={table.name} value={table.name}>
+                {table.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </Box>
+
+        {/* TableEditForm for selected table */}
+
+        {currentTable && (
+          <TableEditForm tableData={currentTable} onSubmit={handleFormSubmit} />
+        )}
+      </Box>
+
+      {/* Relations Visualisation  */}
+      <Box>
+        <h3>Relations</h3>
+        {currentNamespace?.relations.map((relation: Relation, index: number) => (
+          <Box key={index}>
+            <p>
+              {relation.fromTable}.{relation.fromColumn} → {relation.toTable}.{relation.toColumn}
+            </p>
+          </Box>
+        ))}
+      </Box>
+
+      {/* Popup for adding relations */}
+      
+      <Button variant="contained" color="secondary" onClick={handleAddRelation}>
+        Add Relation
+      </Button>
+
+      {openPopup && (
+        <AddRelationPopUp
+          data={data}
+          onClose={handleClosePopup}
+          onSave={handleRelationFormSubmit}
+        />
+      )}
+
+    </ThemeProvider>
+  );
 };
 
 export default Home;
