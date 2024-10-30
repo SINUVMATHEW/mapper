@@ -1,0 +1,69 @@
+{
+  "namespaces": [
+    {
+      "name": "Namespace1",
+      "tables": [
+        {
+          "name": "Table1 in Namespace1",
+          "note": "This is Table1 in Namespace1",
+          "tag": "Tag1",
+          "columns": [
+            { "name": "Col1", "type": "Int", "note": "Integer Column", "tag": "TagCol1" },
+            { "name": "Col2", "type": "Text", "note": "Text Column", "tag": "TagCol2" },
+            { "name": "Col3", "type": "Date", "note": "Date Column", "tag": "TagCol3" }
+          ],
+          "primaryKeys": ["Key1", "Key2"]
+        },
+        {
+          "name": "Table2 in Namespace1",
+          "note": "This is Table2 in Namespace1",
+          "tag": "Tag2",
+          "columns": [
+            { "name": "Col1", "type": "Int", "note": "Integer Column", "tag": "TagCol1" }
+          ],
+          "primaryKeys": ["Key3"]
+        },
+        {
+          "name": "Table3 in Namespace3",
+          "note": "This is Table3",
+          "tag": "Tag3",
+          "columns": [
+            { "name": "Col1", "type": "Int", "note": "Integer Column", "tag": "TagCol1" },
+            { "name": "Col2", "type": "Text", "note": "Text Column", "tag": "TagCol2" }
+          ],
+          "primaryKeys": ["Key4"]
+        }
+      ],
+      "relations": [
+        { "fromTable": "Table1", "fromColumn": "Col1", "toTable": "Table2", "toColumn": "Col1" },
+        { "fromTable": "Table1", "fromColumn": "Col2", "toTable": "Table3", "toColumn": "Col1" }
+      ]
+    },
+    {
+      "name": "Namespace2",
+      "tables": [
+        {
+          "name": "Table4 in namespace 2",
+          "note": "This is Table4",
+          "tag": "Tag4",
+          "columns": [
+            { "name": "Col4", "type": "Int", "note": "Integer Column", "tag": "TagCol4" }
+          ],
+          "primaryKeys": ["Key5"]
+        },
+        {
+          "name": "Table5 in namespace 2",
+          "note": "This is Table5",
+          "tag": "Tag5",
+          "columns": [
+            { "name": "Col5", "type": "Text", "note": "Text Column", "tag": "TagCol5" }
+          ],
+          "primaryKeys": ["Key6"]
+        }
+      ],
+      "relations": [
+        { "fromTable": "Table4", "fromColumn": "Col4", "toTable": "Table5", "toColumn": "Col5" }
+      ]
+    }
+  ]
+}
