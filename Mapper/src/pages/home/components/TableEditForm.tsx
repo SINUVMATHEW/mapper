@@ -37,14 +37,19 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ tableData, onSubmit }) =>
         padding: 3,
       }}
     >
-      <Typography sx={{ display: "flex", justifyContent: "center", fontSize: '20px' }} color="#2b2b2b">
+      <Typography
+        sx={{ display: "flex", justifyContent: "center", fontSize: "20px" }}
+        color="#2b2b2b"
+      >
         Edit {formData.name}
       </Typography>
-      <Box style={{
-      borderBottom: '1px solid rgba(0, 0, 0, 0.3)', 
-      width: '100%',
-      marginBottom: '20px'
-    }} />
+      <Box
+        style={{
+          borderBottom: "1px solid rgba(0, 0, 0, 0.3)",
+          width: "100%",
+          marginBottom: "20px",
+        }}
+      />
 
       <Box sx={{ display: "flex", gap: 2, justifyContent: "space-between" }}>
         <TextField
@@ -60,7 +65,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ tableData, onSubmit }) =>
           fullWidth
         />
       </Box>
-      <Box sx={{ display: "flex",justifyContent:"flex-start",alignItems:"center" }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }}>
         <Typography color="grey">Primary Keys : </Typography>
         {tableData?.primaryKeys.map((key: string) => (
           <ul>{key}</ul>

@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "../../../theme/theme";
-import { Table, Relation, DataType,RelationSelection } from "../interfaces/interfaces";
+import { Table, DataType, RelationSelection } from "../interfaces/interfaces";
 import { Select, MenuItem, Box, SelectChangeEvent, Button } from "@mui/material";
 import TableEditForm from "./TableEditForm";
 import AddRelationPopUp from "./AddRelationPopUp";
+import RelationVisualization from "./RelationVisualization";
 
 const Home = () => {
- 
-
   const [data, setData] = useState<DataType | null>(null);
   const [selectedNamespace, setSelectedNamespace] = useState("");
   const [selectedTable, setSelectedTable] = useState("");
@@ -77,37 +76,33 @@ const Home = () => {
     setOpenPopup(false);
   };
 
-const handleRelationFormSubmit = (
-  from: RelationSelection,
-  to: RelationSelection
-) => {
-  const updatedData = { ...data }; 
-  const fromNamespace = updatedData.namespaces.find(ns => ns.name === from.namespace);
-  const toNamespace = updatedData.namespaces.find(ns => ns.name === to.namespace);
+  const handleRelationFormSubmit = (from: RelationSelection, to: RelationSelection) => {
+    const updatedData = { ...data };
+    const fromNamespace = updatedData.namespaces.find((ns) => ns.name === from.namespace);
+    const toNamespace = updatedData.namespaces.find((ns) => ns.name === to.namespace);
 
-  if (fromNamespace && toNamespace) {
-    fromNamespace.relations.push({
-      fromTable: from.table,
-      fromColumn: from.column,
-      toTable: to.table,
-      toColumn: to.column,
-    });
+    if (fromNamespace && toNamespace) {
+      fromNamespace.relations.push({
+        fromTable: from.table,
+        fromColumn: from.column,
+        toTable: to.table,
+        toColumn: to.column,
+      });
 
-    toNamespace.relations.push({
-      fromTable: to.table,
-      fromColumn: to.column,
-      toTable: from.table,
-      toColumn: from.column,
-    });
+      toNamespace.relations.push({
+        fromTable: to.table,
+        fromColumn: to.column,
+        toTable: from.table,
+        toColumn: from.column,
+      });
 
-    setData(updatedData); 
-  } else {
-    console.error('One or both namespaces not found'); 
-  }
+      setData(updatedData);
+    } else {
+      console.error("One or both namespaces not found");
+    }
 
-  setOpenPopup(false); 
-};
-
+    setOpenPopup(false);
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -116,7 +111,7 @@ const handleRelationFormSubmit = (
           sx={{
             display: "flex",
             flexDirection: "row",
-            justifyContent:"space-around",
+            justifyContent: "space-around",
             gap: 2,
             pb: 4,
           }}
@@ -139,25 +134,15 @@ const handleRelationFormSubmit = (
 
         {/* TableEditForm for selected table */}
 
-        {currentTable && (
-          <TableEditForm tableData={currentTable} onSubmit={handleFormSubmit} />
-        )}
+        {currentTable && <TableEditForm tableData={currentTable} onSubmit={handleFormSubmit} />}
       </Box>
 
       {/* Relations Visualisation  */}
-      <Box>
-        <h3>Relations</h3>
-        {currentNamespace?.relations.map((relation: Relation, index: number) => (
-          <Box key={index}>
-            <p>
-              {relation.fromTable}.{relation.fromColumn} → {relation.toTable}.{relation.toColumn}
-            </p>
-          </Box>
-        ))}
-      </Box>
+
+      {currentNamespace && <RelationVisualization currentNamespace={currentNamespace} />}
 
       {/* Popup for adding relations */}
-      
+
       <Button variant="contained" color="secondary" onClick={handleAddRelation}>
         Add Relation
       </Button>
@@ -169,7 +154,6 @@ const handleRelationFormSubmit = (
           onSave={handleRelationFormSubmit}
         />
       )}
-
     </ThemeProvider>
   );
 };

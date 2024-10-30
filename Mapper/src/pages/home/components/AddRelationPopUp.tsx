@@ -16,33 +16,33 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
   const [localData, setLocalData] = useState<DataType | null>(null);
   const [fromNamespace, setFromNamespace] = useState<Namespace | undefined>(undefined);
   const [toNamespace, setToNamespace] = useState<Namespace | undefined>(undefined);
-  const [fromTable, setFromTable] = useState<string>('');
-  const [toTable, setToTable] = useState<string>('');
-  const [fromColumn, setFromColumn] = useState<string>('');
-  const [toColumn, setToColumn] = useState<string>('');
+  const [fromTable, setFromTable] = useState<string>("");
+  const [toTable, setToTable] = useState<string>("");
+  const [fromColumn, setFromColumn] = useState<string>("");
+  const [toColumn, setToColumn] = useState<string>("");
 
   useEffect(() => {
     setLocalData(data);
   }, [data]);
 
   const handleFromNamespaceChange = (value: string) => {
-    const selectedNamespace = localData?.namespaces.find(ns => ns.name === value);
+    const selectedNamespace = localData?.namespaces.find((ns) => ns.name === value);
     setFromNamespace(selectedNamespace);
-    setFromTable(selectedNamespace?.tables[0]?.name || '');
-    setFromColumn(selectedNamespace?.tables[0]?.columns[0]?.name || '');
+    setFromTable(selectedNamespace?.tables[0]?.name || "");
+    setFromColumn(selectedNamespace?.tables[0]?.columns[0]?.name || "");
   };
 
   const handleToNamespaceChange = (value: string) => {
-    const selectedNamespace = localData?.namespaces.find(ns => ns.name === value);
+    const selectedNamespace = localData?.namespaces.find((ns) => ns.name === value);
     setToNamespace(selectedNamespace);
-    setToTable(selectedNamespace?.tables[0]?.name || '');
-    setToColumn(selectedNamespace?.tables[0]?.columns[0]?.name || '');
+    setToTable(selectedNamespace?.tables[0]?.name || "");
+    setToColumn(selectedNamespace?.tables[0]?.columns[0]?.name || "");
   };
 
   const handleSave = () => {
     const from = { namespace: fromNamespace?.name, table: fromTable, column: fromColumn };
     const to = { namespace: toNamespace?.name, table: toTable, column: toColumn };
-    onSave (from, to);
+    onSave(from, to);
   };
 
   return (
@@ -50,15 +50,24 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
       <DialogTitle>Add Relation</DialogTitle>
       <DialogContent>
         <Grid container spacing={4}>
-
           {/* From */}
-          
-          <Grid item xs={6} sx={{borderRight:1, p:4 , borderColor:"#ddd"}}>
-            <Typography sx={{display:"flex",justifyContent:"center",color:"#aa1111",pb:1,fontSize:"18px"}}>From </Typography>
+
+          <Grid item xs={6} sx={{ borderRight: 1, p: 4, borderColor: "#ddd" }}>
+            <Typography
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                color: "#aa1111",
+                pb: 1,
+                fontSize: "18px",
+              }}
+            >
+              From{" "}
+            </Typography>
             <Typography>Name Space</Typography>
             <Select
               fullWidth
-              value={fromNamespace?.name || ''}
+              value={fromNamespace?.name || ""}
               onChange={(e) => handleFromNamespaceChange(e.target.value)}
             >
               {localData?.namespaces.map((ns) => (
@@ -69,11 +78,7 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
             </Select>
 
             <Typography sx={{ mt: 2 }}>Table</Typography>
-            <Select
-              fullWidth
-              value={fromTable}
-              onChange={(e) => setFromTable(e.target.value)} 
-            >
+            <Select fullWidth value={fromTable} onChange={(e) => setFromTable(e.target.value)}>
               {fromNamespace?.tables.map((table) => (
                 <MenuItem key={table.name} value={table.name}>
                   {table.name}
@@ -81,26 +86,36 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
               ))}
             </Select>
             <Typography sx={{ mt: 2 }}>Column</Typography>
-            <Select
-              fullWidth
-              value={fromColumn}
-              onChange={(e) => setFromColumn(e.target.value)} 
-            >
-              {fromTable ? fromNamespace?.tables.find(t => t.name === fromTable)?.columns.map((col) => (
-                <MenuItem key={col.name} value={col.name}>
-                  {col.name}
-                </MenuItem>
-              )) : null}
+            <Select fullWidth value={fromColumn} onChange={(e) => setFromColumn(e.target.value)}>
+              {fromTable
+                ? fromNamespace?.tables
+                    .find((t) => t.name === fromTable)
+                    ?.columns.map((col) => (
+                      <MenuItem key={col.name} value={col.name}>
+                        {col.name}
+                      </MenuItem>
+                    ))
+                : null}
             </Select>
           </Grid>
 
           {/* To */}
           <Grid item xs={6}>
-            <Typography sx={{display:"flex",justifyContent:"center",color:"#aa1111",pb:1,fontSize:"18px"}}>To </Typography>
+            <Typography
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                color: "#aa1111",
+                pb: 1,
+                fontSize: "18px",
+              }}
+            >
+              To{" "}
+            </Typography>
             <Typography>Name Space</Typography>
             <Select
               fullWidth
-              value={toNamespace?.name || ''}
+              value={toNamespace?.name || ""}
               onChange={(e) => handleToNamespaceChange(e.target.value)}
             >
               {localData?.namespaces.map((ns) => (
@@ -110,11 +125,7 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
               ))}
             </Select>
             <Typography sx={{ mt: 2 }}>Table</Typography>
-            <Select
-              fullWidth
-              value={toTable}
-              onChange={(e) => setToTable(e.target.value)} 
-            >
+            <Select fullWidth value={toTable} onChange={(e) => setToTable(e.target.value)}>
               {toNamespace?.tables.map((table) => (
                 <MenuItem key={table.name} value={table.name}>
                   {table.name}
@@ -122,16 +133,16 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
               ))}
             </Select>
             <Typography sx={{ mt: 2 }}>Column</Typography>
-            <Select
-              fullWidth
-              value={toColumn}
-              onChange={(e) => setToColumn(e.target.value)}
-            >
-              {toTable ? toNamespace?.tables.find(t => t.name === toTable)?.columns.map((col) => (
-                <MenuItem key={col.name} value={col.name}>
-                  {col.name}
-                </MenuItem>
-              )) : null}
+            <Select fullWidth value={toColumn} onChange={(e) => setToColumn(e.target.value)}>
+              {toTable
+                ? toNamespace?.tables
+                    .find((t) => t.name === toTable)
+                    ?.columns.map((col) => (
+                      <MenuItem key={col.name} value={col.name}>
+                        {col.name}
+                      </MenuItem>
+                    ))
+                : null}
             </Select>
           </Grid>
         </Grid>
