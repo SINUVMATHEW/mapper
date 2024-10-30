@@ -1,66 +1,66 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#2A3B85', 
-      contrastText: '#ffffff',
+      main: "#2A3B85",
+      contrastText: "#ffffff",
     },
     secondary: {
-      main: '#f50057', 
-      contrastText: '#ffffff',
+      main: "#f50057",
+      contrastText: "#ffffff",
     },
     background: {
-      default: '#f5f5f5', 
-      paper: '#ffffff',
+      default: "#f5f5f5",
+      paper: "#ffffff",
     },
     text: {
-      primary: '#333333', 
-      secondary: '#757575', 
+      primary: "#333333",
+      secondary: "#757575",
     },
-    divider: '#bdbdbd',
+    divider: "#bdbdbd",
   },
   typography: {
-    fontFamily: 'Roboto, sans-serif', 
+    fontFamily: "Roboto, sans-serif",
     button: {
-      textTransform: 'none', 
-      fontWeight: 'bold',
+      textTransform: "none",
+      fontWeight: "bold",
     },
   },
   components: {
     MuiSelect: {
       styleOverrides: {
         select: {
-          color: 'white',
-          backgroundColor: '#2A3B85',
-          '&:focus': {
-            backgroundColor: '#2A3B85',
+          color: "white",
+          backgroundColor: "#2A3B85",
+          "&:focus": {
+            backgroundColor: "#2A3B85",
           },
         },
         icon: {
-          color: 'white',
+          color: "white",
         },
       },
     },
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8, 
-          padding: '8px 16px',
-          fontWeight: 'bold',
+          borderRadius: 8,
+          padding: "8px 16px",
+          fontWeight: "bold",
         },
         containedPrimary: {
-          backgroundColor: '#2A3B85',
-          color: '#ffffff',
-          '&:hover': {
-            backgroundColor: '#3C51AB',
+          backgroundColor: "#2A3B85",
+          color: "#ffffff",
+          "&:hover": {
+            backgroundColor: "#3C51AB",
           },
         },
         containedSecondary: {
-          backgroundColor: '#f50057',
-          color: '#ffffff',
-          '&:hover': {
-            backgroundColor: '#c51162',
+          backgroundColor: "#f50057",
+          color: "#ffffff",
+          "&:hover": {
+            backgroundColor: "#c51162",
           },
         },
       },
@@ -68,18 +68,18 @@ const theme = createTheme({
     MuiTable: {
       styleOverrides: {
         root: {
-          backgroundColor: '#ffffff', 
-          borderCollapse: 'collapse',
+          backgroundColor: "#ffffff",
+          borderCollapse: "collapse",
         },
       },
     },
     MuiTableHead: {
       styleOverrides: {
         root: {
-          backgroundColor: '#2A3B85',
-          '& .MuiTableCell-root': {
-            color: '#ffffff',
-            fontWeight: 'bold',
+          backgroundColor: "#2A3B85",
+          "& .MuiTableCell-root": {
+            color: "#ffffff",
+            fontWeight: "bold",
           },
         },
       },
@@ -87,9 +87,9 @@ const theme = createTheme({
     MuiTableBody: {
       styleOverrides: {
         root: {
-          '& .MuiTableCell-root': {
-            color: '#333333',
-            borderColor: '#bdbdbd', 
+          "& .MuiTableCell-root": {
+            color: "#333333",
+            borderColor: "#bdbdbd",
           },
         },
       },
@@ -97,10 +97,10 @@ const theme = createTheme({
     MuiDialog: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#ffffff',
-          color: '#333333',
-          padding: '20px',
-          borderRadius: '8px',
+          backgroundColor: "#ffffff",
+          color: "#333333",
+          padding: "20px",
+          borderRadius: "8px",
         },
       },
     },
