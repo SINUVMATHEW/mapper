@@ -10,7 +10,7 @@ export interface Table {
   primaryKeys: string[];
 }
 
-export interface Namespace {
+export interface Keyspace {
   name: string;
   tables: Table[];
   relations: Relation[];
@@ -26,12 +26,14 @@ export interface Relation {
 export interface Column {
   name: string;
   type: string;
+  clusteringOrder: string;
+  position : number
   note: string;
   tag: string;
 }
 
 export interface DataType {
-  namespaces: Namespace[];
+  Keyspaces: Keyspace[];
 }
 
 export interface TableEditFormProps {
@@ -40,7 +42,7 @@ export interface TableEditFormProps {
 }
 
 export interface RelationSelection {
-  namespace: string | undefined;
+  Keyspace: string | undefined;
   table: string;
   column: string;
 }
@@ -52,5 +54,5 @@ export interface AddRelationPopUpProps {
 }
 
 export interface RelationVisualizationProps {
-  currentNamespace: Namespace;
+  currentKeyspace: Keyspace;
 }

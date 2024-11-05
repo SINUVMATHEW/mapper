@@ -1,37 +1,38 @@
 {
-  "namespaces": [
+  "Keyspaces": [
     {
-      "name": "Namespace1",
+      "name": "Keyspace1",
       "tables": [
         {
-          "name": "Table1 in Namespace1",
-          "note": "This is Table1 in Namespace1",
+          "name": "Table1 in Keyspace1",
+          "note": "This is Table1 in Keyspace1",
           "tag": "Tag1",
           "columns": [
-            { "name": "Col1", "type": "Int", "note": "Integer Column", "tag": "TagCol1" },
-            { "name": "Col2", "type": "Text", "note": "Text Column", "tag": "TagCol2" },
-            { "name": "Col3", "type": "Date", "note": "Date Column", "tag": "TagCol3" }
+            { "name": "Col1", "type": "Int", "clusteringOrder":"none","position":"-1","note": "Integer Column", "tag": "TagCol1" },
+            { "name": "Col2", "type": "Text","clusteringOrder":"asc","position":"1", "note": "Text Column", "tag": "TagCol2" },
+            { "name": "Col3", "type": "Date","clusteringOrder":"asc","position":"2", "note": "Date Column", "tag": "TagCol3" }
           ],
-          "primaryKeys": ["Key1", "Key2"]
+          "primaryKeys": ["Partition key: col3 , Clustering columns: col2 , col3"]
+        
         },
         {
-          "name": "Table2 in Namespace1",
-          "note": "This is Table2 in Namespace1",
+          "name": "Table2 in Keyspace1",
+          "note": "This is Table2 in Keyspace1",
           "tag": "Tag2",
           "columns": [
-            { "name": "Col1", "type": "Int", "note": "Integer Column", "tag": "TagCol1" }
+            { "name": "Col1", "type": "Int","clusteringOrder":"none","position":"-1", "note": "Integer Column", "tag": "TagCol1" }
           ],
-          "primaryKeys": ["Key3"]
+          "primaryKeys": ["Partition key: col3 , Clustering columns: col2 , col3"]
         },
         {
-          "name": "Table3 in Namespace3",
+          "name": "Table3 in Keyspace3",
           "note": "This is Table3",
           "tag": "Tag3",
           "columns": [
-            { "name": "Col1", "type": "Int", "note": "Integer Column", "tag": "TagCol1" },
-            { "name": "Col2", "type": "Text", "note": "Text Column", "tag": "TagCol2" }
+            { "name": "Col1", "type": "Int","clusteringOrder":"none","position":"-1", "note": "Integer Column", "tag": "TagCol1" },
+            { "name": "Col2", "type": "Text","clusteringOrder":"none","position":"-1", "note": "Text Column", "tag": "TagCol2" }
           ],
-          "primaryKeys": ["Key4"]
+          "primaryKeys": ["Partition key: col3 , Clustering columns: col2 , col3"]
         }
       ],
       "relations": [
@@ -40,25 +41,25 @@
       ]
     },
     {
-      "name": "Namespace2",
+      "name": "Keyspace2",
       "tables": [
         {
-          "name": "Table4 in namespace 2",
+          "name": "Table4 in Keyspace 2",
           "note": "This is Table4",
           "tag": "Tag4",
           "columns": [
-            { "name": "Col4", "type": "Int", "note": "Integer Column", "tag": "TagCol4" }
+            { "name": "Col4", "type": "Int","clusteringOrder":"none","position":"-1", "note": "Integer Column", "tag": "TagCol4" }
           ],
           "primaryKeys": ["Key5"]
         },
         {
-          "name": "Table5 in namespace 2",
+          "name": "Table5 in Keyspace 2",
           "note": "This is Table5",
           "tag": "Tag5",
           "columns": [
-            { "name": "Col5", "type": "Text", "note": "Text Column", "tag": "TagCol5" }
+            { "name": "Col5", "type": "Text","clusteringOrder":"none","position":"-1", "note": "Text Column", "tag": "TagCol5" }
           ],
-          "primaryKeys": ["Key6"]
+          "primaryKeys": ["Partition key: col3 , Clustering columns: col2 , col3"]
         }
       ],
       "relations": [

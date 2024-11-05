@@ -10,12 +10,12 @@ import {
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import { AddRelationPopUpProps, DataType, Namespace } from "../interfaces/interfaces";
+import { AddRelationPopUpProps, DataType, Keyspace } from "../interfaces/interfaces";
 
 const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSave }) => {
   const [localData, setLocalData] = useState<DataType | null>(null);
-  const [fromNamespace, setFromNamespace] = useState<Namespace | undefined>(undefined);
-  const [toNamespace, setToNamespace] = useState<Namespace | undefined>(undefined);
+  const [fromKeyspace, setFromKeyspace] = useState<Keyspace | undefined>(undefined);
+  const [toKeyspace, setToKeyspace] = useState<Keyspace | undefined>(undefined);
   const [fromTable, setFromTable] = useState<string>("");
   const [toTable, setToTable] = useState<string>("");
   const [fromColumn, setFromColumn] = useState<string>("");
@@ -25,23 +25,23 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
     setLocalData(data);
   }, [data]);
 
-  const handleFromNamespaceChange = (value: string) => {
-    const selectedNamespace = localData?.namespaces.find((ns) => ns.name === value);
-    setFromNamespace(selectedNamespace);
-    setFromTable(selectedNamespace?.tables[0]?.name || "");
-    setFromColumn(selectedNamespace?.tables[0]?.columns[0]?.name || "");
+  const handleFromKeyspaceChange = (value: string) => {
+    const selectedKeyspace = localData?.Keyspaces.find((ns) => ns.name === value);
+    setFromKeyspace(selectedKeyspace);
+    setFromTable(selectedKeyspace?.tables[0]?.name || "");
+    setFromColumn(selectedKeyspace?.tables[0]?.columns[0]?.name || "");
   };
 
-  const handleToNamespaceChange = (value: string) => {
-    const selectedNamespace = localData?.namespaces.find((ns) => ns.name === value);
-    setToNamespace(selectedNamespace);
-    setToTable(selectedNamespace?.tables[0]?.name || "");
-    setToColumn(selectedNamespace?.tables[0]?.columns[0]?.name || "");
+  const handleToKeyspaceChange = (value: string) => {
+    const selectedKeyspace = localData?.Keyspaces.find((ns) => ns.name === value);
+    setToKeyspace(selectedKeyspace);
+    setToTable(selectedKeyspace?.tables[0]?.name || "");
+    setToColumn(selectedKeyspace?.tables[0]?.columns[0]?.name || "");
   };
 
   const handleSave = () => {
-    const from = { namespace: fromNamespace?.name, table: fromTable, column: fromColumn };
-    const to = { namespace: toNamespace?.name, table: toTable, column: toColumn };
+    const from = { Keyspace: fromKeyspace?.name, table: fromTable, column: fromColumn };
+    const to = { Keyspace: toKeyspace?.name, table: toTable, column: toColumn };
     onSave(from, to);
   };
 
@@ -64,13 +64,13 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
             >
               From{" "}
             </Typography>
-            <Typography>Name Space</Typography>
+            <Typography>Keyspace</Typography>
             <Select
               fullWidth
-              value={fromNamespace?.name || ""}
-              onChange={(e) => handleFromNamespaceChange(e.target.value)}
+              value={fromKeyspace?.name || ""}
+              onChange={(e) => handleFromKeyspaceChange(e.target.value)}
             >
-              {localData?.namespaces.map((ns) => (
+              {localData?.Keyspaces.map((ns) => (
                 <MenuItem key={ns.name} value={ns.name}>
                   {ns.name}
                 </MenuItem>
@@ -79,7 +79,7 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
 
             <Typography sx={{ mt: 2 }}>Table</Typography>
             <Select fullWidth value={fromTable} onChange={(e) => setFromTable(e.target.value)}>
-              {fromNamespace?.tables.map((table) => (
+              {fromKeyspace?.tables.map((table) => (
                 <MenuItem key={table.name} value={table.name}>
                   {table.name}
                 </MenuItem>
@@ -88,7 +88,7 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
             <Typography sx={{ mt: 2 }}>Column</Typography>
             <Select fullWidth value={fromColumn} onChange={(e) => setFromColumn(e.target.value)}>
               {fromTable
-                ? fromNamespace?.tables
+                ? fromKeyspace?.tables
                     .find((t) => t.name === fromTable)
                     ?.columns.map((col) => (
                       <MenuItem key={col.name} value={col.name}>
@@ -112,13 +112,13 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
             >
               To{" "}
             </Typography>
-            <Typography>Name Space</Typography>
+            <Typography>Keyspace</Typography>
             <Select
               fullWidth
-              value={toNamespace?.name || ""}
-              onChange={(e) => handleToNamespaceChange(e.target.value)}
+              value={toKeyspace?.name || ""}
+              onChange={(e) => handleToKeyspaceChange(e.target.value)}
             >
-              {localData?.namespaces.map((ns) => (
+              {localData?.Keyspaces.map((ns) => (
                 <MenuItem key={ns.name} value={ns.name}>
                   {ns.name}
                 </MenuItem>
@@ -126,7 +126,7 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
             </Select>
             <Typography sx={{ mt: 2 }}>Table</Typography>
             <Select fullWidth value={toTable} onChange={(e) => setToTable(e.target.value)}>
-              {toNamespace?.tables.map((table) => (
+              {toKeyspace?.tables.map((table) => (
                 <MenuItem key={table.name} value={table.name}>
                   {table.name}
                 </MenuItem>
@@ -135,7 +135,7 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ data, onClose, onSa
             <Typography sx={{ mt: 2 }}>Column</Typography>
             <Select fullWidth value={toColumn} onChange={(e) => setToColumn(e.target.value)}>
               {toTable
-                ? toNamespace?.tables
+                ? toKeyspace?.tables
                     .find((t) => t.name === toTable)
                     ?.columns.map((col) => (
                       <MenuItem key={col.name} value={col.name}>
