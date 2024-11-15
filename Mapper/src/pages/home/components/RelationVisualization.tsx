@@ -1,17 +1,29 @@
-import { Box } from "@mui/material";
+import { Box, Typography, Card, CardContent, Divider, Stack } from "@mui/material";
 import React from "react";
 import { Relation, RelationVisualizationProps } from "../interfaces/interfaces";
+import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 
 const RelationVisualization: React.FC<RelationVisualizationProps> = ({ currentNamespace }) => {
   return (
     <Box>
-      <h3>Relations</h3>
+      <Typography variant="h5" gutterBottom>
+        Relations
+      </Typography>
       {currentNamespace?.relations.map((relation: Relation, index: number) => (
-        <Box key={index}>
-          <p>
-            {relation.fromTable}.{relation.fromColumn} → {relation.toTable}.{relation.toColumn}
-          </p>
-        </Box>
+        <Card key={index} variant="outlined" sx={{ marginBottom: 2 }}>
+          <CardContent>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography variant="body1" fontWeight="bold">
+                {relation.fromTable}.{relation.fromColumn}
+              </Typography>
+              <ArrowRightAltIcon color="action" />
+              <Typography variant="body1" fontWeight="bold">
+                {relation.toTable}.{relation.toColumn}
+              </Typography>
+            </Stack>
+          </CardContent>
+          {index < currentNamespace.relations.length - 1 && <Divider />}
+        </Card>
       ))}
     </Box>
   );

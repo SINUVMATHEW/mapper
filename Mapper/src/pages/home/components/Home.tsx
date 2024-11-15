@@ -2,16 +2,32 @@ import { useEffect, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "../../../theme/theme";
 import { Table, DataType, RelationSelection } from "../interfaces/interfaces";
-import { Select, MenuItem, Box, SelectChangeEvent, Button } from "@mui/material";
+import {
+  Select,
+  MenuItem,
+  Box,
+  SelectChangeEvent,
+  Button,
+  Autocomplete,
+  TextField,
+  Card,
+  Grid,
+  Typography,
+} from "@mui/material";
 import TableEditForm from "./TableEditForm";
 import AddRelationPopUp from "./AddRelationPopUp";
-import RelationVisualization from "./RelationVisualization";
+import NestedFlow from "../../flowchart/flowchartbase";
+import { IoMdCloudUpload } from "react-icons/io";
 
 const Home = () => {
   const [data, setData] = useState<DataType | null>(null);
-  const [selectedNamespace, setSelectedNamespace] = useState("");
+  const [selectedKeyspace, setSelectedKeyspace] = useState("");
   const [selectedTable, setSelectedTable] = useState("");
   const [openPopup, setOpenPopup] = useState(false);
+  const [searchData, setSearchData] = useState([]);
+  const [query, setQuery] = useState("");
+  
+  const search_parameters = Object.keys(Object.assign({}, ...searchData));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,8 +38,8 @@ const Home = () => {
         }
         const jsonData = await response.json();
         setData(jsonData);
-        setSelectedNamespace(jsonData.namespaces[0]?.name || "");
-        setSelectedTable(jsonData.namespaces[0]?.tables[0]?.name || "");
+        setSelectedKeyspace(jsonData.Keyspaces[0]?.name || "");
+        setSelectedTable(jsonData.Keyspaces[0]?.tables[0]?.name || "");
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -32,37 +48,89 @@ const Home = () => {
     fetchData();
   }, []);
 
+   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/keyspace_names');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const jsonData = await response.json();
+
+        // Update state with fetched data
+        setData(jsonData);
+
+        // Set default selected keyspace and table if available
+        if (jsonData.Keyspaces && jsonData.Keyspaces.length > 0) {
+          setSelectedKeyspace(jsonData.Keyspaces[0]?.name || '');
+          setSelectedTable(jsonData.Keyspaces[0]?.tables[0]?.name || '');
+        }
+      } catch (error) {
+        setError(`Error fetching data: ${error.message}`);
+      } finally {
+        setLoading(false);  // Set loading to false once the API call finishes
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
+
+
+  const fetchSearchData = () => {
+    return fetch("https://jsonplaceholder.typicode.com/users")
+      .then((res) => res.json())
+
+      .then((d) => setSearchData(d));
+  };
+
+  useEffect(() => {
+    fetchSearchData();
+  }, []);
+  
+
+  function search(searchData: any) {
+    return searchData.filter((searchData: any) =>
+      search_parameters.some((parameter) =>
+        searchData[parameter].toString().toLowerCase().includes(query)
+      )
+    );
+  }
+
   if (!data) {
     return <Box>Loading...</Box>;
   }
 
-  const currentNamespace = data.namespaces.find(
-    (namespace) => namespace.name === selectedNamespace
-  );
+  const currentKeyspace = data.Keyspaces.find((Keyspace) => Keyspace.name === selectedKeyspace);
 
-  const currentTable = currentNamespace?.tables.find((table) => table.name === selectedTable);
+  const currentTable = currentKeyspace?.tables.find((table) => table.name === selectedTable);
 
-  const handleNamespaceChange = (event: SelectChangeEvent<string>) => {
-    const namespaceName = event.target.value;
-    setSelectedNamespace(namespaceName);
-    const namespace = data.namespaces.find((ns) => ns.name === namespaceName);
-    if (namespace && namespace.tables.length > 0) {
-      setSelectedTable(namespace.tables[0].name);
+  const handleKeyspaceChange = (event: SelectChangeEvent<string>) => {
+    const KeyspaceName = event.target.value;
+    setSelectedKeyspace(KeyspaceName);
+    const Keyspace = data.Keyspaces.find((ns) => ns.name === KeyspaceName);
+    if (Keyspace && Keyspace.tables.length > 0) {
+      setSelectedTable(Keyspace.tables[0].name);
     }
   };
 
-  const handleTableChange = (event: SelectChangeEvent<string>) => {
-    setSelectedTable(event.target.value as string);
+  const handleTableChange = (_: React.SyntheticEvent, newValue: string | null) => {
+    if (newValue) {
+      setSelectedTable(newValue);
+    }
   };
 
   const handleFormSubmit = (updatedTableData: Table) => {
     const updatedData = { ...data };
-    const namespace = updatedData.namespaces.find((ns) => ns.name === selectedNamespace);
+    const Keyspace = updatedData.Keyspaces.find((ns) => ns.name === selectedKeyspace);
 
-    if (namespace) {
-      const tableIndex = namespace.tables.findIndex((table) => table.name === selectedTable);
+    if (Keyspace) {
+      const tableIndex = Keyspace.tables.findIndex((table) => table.name === selectedTable);
       if (tableIndex !== -1) {
-        namespace.tables[tableIndex] = updatedTableData;
+        Keyspace.tables[tableIndex] = updatedTableData;
         setData(updatedData);
       }
     }
@@ -78,18 +146,18 @@ const Home = () => {
 
   const handleRelationFormSubmit = (from: RelationSelection, to: RelationSelection) => {
     const updatedData = { ...data };
-    const fromNamespace = updatedData.namespaces.find((ns) => ns.name === from.namespace);
-    const toNamespace = updatedData.namespaces.find((ns) => ns.name === to.namespace);
+    const fromKeyspace = updatedData.Keyspaces.find((ns) => ns.name === from.Keyspace);
+    const toKeyspace = updatedData.Keyspaces.find((ns) => ns.name === to.Keyspace);
 
-    if (fromNamespace && toNamespace) {
-      fromNamespace.relations.push({
+    if (fromKeyspace && toKeyspace) {
+      fromKeyspace.relations.push({
         fromTable: from.table,
         fromColumn: from.column,
         toTable: to.table,
         toColumn: to.column,
       });
 
-      toNamespace.relations.push({
+      toKeyspace.relations.push({
         fromTable: to.table,
         fromColumn: to.column,
         toTable: from.table,
@@ -98,7 +166,7 @@ const Home = () => {
 
       setData(updatedData);
     } else {
-      console.error("One or both namespaces not found");
+      console.error("One or both Keyspaces not found");
     }
 
     setOpenPopup(false);
@@ -107,53 +175,119 @@ const Home = () => {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ p: 2 }}>
+        {/* Select Menus */}
         <Box
           sx={{
             display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-around",
-            gap: 2,
-            pb: 4,
+            gap: 1,
+            pb: 3,
+            justifyContent: "space-between",
           }}
         >
-          <Select value={selectedNamespace} onChange={handleNamespaceChange} fullWidth>
-            {data.namespaces.map((namespace) => (
-              <MenuItem key={namespace.name} value={namespace.name}>
-                {namespace.name}
+          <Select
+            value={selectedKeyspace}
+            onChange={handleKeyspaceChange}
+            variant="outlined"
+            size="small"
+            fullWidth
+            sx={{ flex: 1 }}
+          >
+            {data.Keyspaces.map((Keyspace) => (
+              <MenuItem key={Keyspace.name} value={Keyspace.name}>
+                {Keyspace.name}
               </MenuItem>
             ))}
           </Select>
-          <Select value={selectedTable} onChange={handleTableChange} fullWidth>
-            {currentNamespace?.tables.map((table) => (
-              <MenuItem key={table.name} value={table.name}>
-                {table.name}
-              </MenuItem>
+          <Autocomplete
+            value={selectedTable}
+            onChange={(event, newValue) => handleTableChange(event, newValue)}
+            options={currentKeyspace?.tables.map((table) => table.name) || []}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Select Table"
+                variant="outlined"
+                size="small"
+                fullWidth
+              />
+            )}
+            size="small"
+            fullWidth
+            sx={{ flex: 1 }}
+          />
+
+          <Button
+            component="label"
+            variant="contained"
+            startIcon={<IoMdCloudUpload />}
+            tabIndex={-1}
+          >
+            Upload files
+            <input
+              type="file"
+              hidden
+              // onChange={handleFileChange}
+            />
+          </Button>
+        </Box>
+
+        {/* global search  */}
+        <Box sx={{ marginTop: 2 }}>
+          <TextField
+            variant="outlined"
+            type="search"
+            id="search-form"
+            name="search-form"
+            fullWidth
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search user"
+          />
+        </Box>
+
+        <Box component="center" sx={{ marginTop: 4 }}>
+          <Grid container spacing={2} justifyContent="center">
+            {search(searchData).map((dataObj: any) => (
+              <Grid item xs={12} sm={6} md={4} key={dataObj.username}>
+                <Card sx={{ padding: 2, borderRadius: 2, boxShadow: 3 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    @{dataObj.username}
+                  </Typography>
+                  <Typography variant="h6" component="div" gutterBottom>
+                    {dataObj.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {dataObj.email}
+                  </Typography>
+                </Card>
+              </Grid>
             ))}
-          </Select>
+          </Grid>
         </Box>
 
         {/* TableEditForm for selected table */}
+        {currentTable && (
+          <Box sx={{ pb: 3 }}>
+            <TableEditForm tableData={currentTable} onSubmit={handleFormSubmit} />
+          </Box>
+        )}
 
-        {currentTable && <TableEditForm tableData={currentTable} onSubmit={handleFormSubmit} />}
+        {/* Button and Popup for Adding Relations */}
+        <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
+          <Button variant="contained" color="secondary" size="small" onClick={handleAddRelation}>
+            Add Relation
+          </Button>
+          {openPopup && (
+            <AddRelationPopUp
+              data={data}
+              onClose={handleClosePopup}
+              onSave={handleRelationFormSubmit}
+            />
+          )}
+        </Box>
       </Box>
-
-      {/* Relations Visualisation  */}
-
-      {currentNamespace && <RelationVisualization currentNamespace={currentNamespace} />}
-
-      {/* Popup for adding relations */}
-
-      <Button variant="contained" color="secondary" onClick={handleAddRelation}>
-        Add Relation
-      </Button>
-
-      {openPopup && (
-        <AddRelationPopUp
-          data={data}
-          onClose={handleClosePopup}
-          onSave={handleRelationFormSubmit}
-        />
-      )}
+      {/* Relations Visualization */}
+      {/* Flowchart */}
+      <NestedFlow />
     </ThemeProvider>
   );
 };
