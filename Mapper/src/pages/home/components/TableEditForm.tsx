@@ -1,23 +1,38 @@
 import React, { useState, useEffect } from "react";
-import { Table, Column, TableEditFormProps } from "../interfaces/interfaces";
-import { TextField, Typography, Box, Button } from "@mui/material";
+import { Table, Column, TableEditFormProps, Params } from "../interfaces/interfaces";
+import {
+  TextField,
+  Typography,
+  Box,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 import Chip from "@mui/material/Chip";
 import ChipInput from "./ChipInput";
+import { DataGrid } from "@mui/x-data-grid";
+import Paper from "@mui/material/Paper";
+import { columns, paginationModel } from "../constants/constants";
 
 const TableEditForm: React.FC<TableEditFormProps> = ({ tableData, onSubmit }) => {
   const [formData, setFormData] = useState(tableData);
-  const [chipData, setChipData] = React.useState<string[]>([]);
-  const [tagInput, setTagInput] = React.useState("");
+  const [chipData, setChipData] = useState<string[]>(formData.tag);
+  const [tagInput, setTagInput] = useState("");
+  const [editColumnData, setEditColumnData] = useState<Column | null>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setFormData(tableData);
   }, [tableData]);
 
-  const handleTableFieldChange = (field: keyof Table, value: string) => {
+  // Table Note handling
+  const handleTableNoteChange = (field: keyof Table, value: string) => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handleAddTag = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  // Table Tag handling
+  const handleAddtableTag = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && tagInput.trim()) {
       setChipData((prevChips) => [...prevChips, tagInput.trim()]);
       setTagInput("");
@@ -25,177 +40,201 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ tableData, onSubmit }) =>
     }
   };
 
-  const handleDelete = (chipToDelete: string) => () => {
+  const handleDeletetableTag = (chipToDelete: string) => () => {
     setChipData((chips) => chips.filter((chip) => chip !== chipToDelete));
   };
-  const handleAddChip = (chip: string) => {
-    setChipData((prevChips) => [...prevChips, chip]);
+
+  // Open dialog on row click
+  const handleRowClick = (params: Params) => {
+    const matchedColumn = formData.columns.find((column) => column.name === params.row.name);
+    if (matchedColumn) {
+      setEditColumnData({ ...matchedColumn });
+      setOpen(true);
+    }
   };
 
-  const handleDeleteChip = (chip: string) => {
-    setChipData((prevChips) => prevChips.filter((c) => c !== chip));
+  // Column tag handling
+  const handleAddTag = (newTag: string) => {
+    if (editColumnData) {
+      setEditColumnData((prevData) => ({
+        ...prevData!,
+        tag: [...prevData!.tag, newTag],
+      }));
+    }
   };
 
-  const handleColumnChange = (index: number, field: keyof Column, value: string) => {
-    const updatedColumns = formData.columns.map((col, i) =>
-      i === index ? { ...col, [field]: value } : col
-    );
-    setFormData({ ...formData, columns: updatedColumns });
+  const handleDeleteTag = (tagToDelete: string) => {
+    if (editColumnData) {
+      setEditColumnData((prevData) => ({
+        ...prevData!,
+        tag: prevData!.tag.filter((tag) => tag !== tagToDelete),
+      }));
+    }
   };
 
-  const handleSubmit = () => {
-    onSubmit(formData);
+  // Edit Column field handling
+  const handleColumnChange = (field: keyof Column, value: string) => {
+    if (editColumnData) {
+      setEditColumnData((prevData) => ({
+        ...prevData!,
+        [field]: value,
+      }));
+    }
+  };
+
+  // Close dialog and clear local state
+  const handleClose = () => {
+    setOpen(false);
+    setEditColumnData(null);
+  };
+
+  // Save edited column back to formData
+  const handleSaveChanges = () => {
+    if (editColumnData) {
+      setFormData((prevData) => ({
+        ...prevData,
+        columns: prevData.columns.map((col) =>
+          col.name === editColumnData.name ? editColumnData : col
+        ),
+      }));
+    }
+    handleClose();
   };
 
   return (
-    <Box
-      component="form"
-      onSubmit={(e) => e.preventDefault()}
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 1,
-        border: 1,
-        borderRadius: 2,
-        padding: 1,
-      }}
-    >
-      <Typography variant="h6" align="center" color="#2b2b2b" sx={{ marginBottom: 1 }}>
-        Edit {formData.name}
-      </Typography>
-
+    <>
+      {/* edit form for table note and tag */}
       <Box
+        component="form"
+        onSubmit={(e) => e.preventDefault()}
         sx={{
           display: "flex",
+          flexDirection: "column",
           gap: 1,
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-        }}>
-        <TextField
-          label="Table Note"
-          value={formData.note}
-          onChange={(e) => handleTableFieldChange("note", e.target.value)}
-          fullWidth
-          size="small"
-          sx={{ flex: "4 1" }}
-        />
-         <Box>
-      <ChipInput
-        chipData={chipData}
-        onAddChip={handleAddChip}
-        onDeleteChip={handleDeleteChip}
-        placeholder="Add new tag"
-      />
-    </Box>
-        
-        {/* <Box
+          border: 1,
+          borderRadius: 2,
+          padding: 1,
+        }}
+      >
+        <Typography align="center" color="#2b2b2b" sx={{ marginBottom: 1, fontSize: "18px" }}>
+          Edit : {formData.name}
+        </Typography>
+
+        <Box
           sx={{
             display: "flex",
-            alignItems: "center",
-            flexWrap: "wrap",
-            padding: "px",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            flex: "1 1 35%",
-          }}
-        >
-          {chipData.map((data, index) => (
-            <Chip
-              key={index}
-              label={data}
-              onDelete={handleDelete(data)}
-              size="small"
-              sx={{ margin: "2px" }}
-            />
-          ))}
-          <TextField
-            variant="standard"
-            placeholder="Add new tag"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={handleAddTag}
-            size="small"
-            InputProps={{
-              disableUnderline: true,
-              style: { marginLeft: "4px", flexGrow: 1 },
-            }}
-            sx={{
-              minWidth: "80px",
-              "& .MuiInputBase-input": {
-                marginLeft: "4px",
-                flexGrow: 1,
-                padding: "0",
-              },
-            }}
-          />
-        </Box> */}
-      </Box>
-
-      <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
-        <Typography color="grey">Primary Keys:</Typography>
-        {tableData?.primaryKeys.map((key: string, idx) => (
-          <Typography
-            key={idx}
-            component="span"
-            sx={{ fontSize: "0.875rem", color: "text.secondary" }}
-          >
-            {key}
-          </Typography>
-        ))}
-      </Box>
-
-      <Typography color="grey" sx={{ marginBottom: 1 }}>
-        Columns:
-      </Typography>
-      {formData.columns.map((column, index) => (
-        <Box
-          key={column.tag}
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "0.5fr 0.5fr 0.5fr 0.5fr 1fr 1fr",
             gap: 1,
-            marginBottom: 1,
-            padding:0,
+            justifyContent: "space-between",
+            width: "100%",
+            alignItems: "center",
+            height: "40px",
           }}
         >
-          <Typography variant="body2" color="text.secondary" sx={{ alignSelf: "center" }}>
-            {`Name: ${column.name}`}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ alignSelf: "center" }}>
-            {`Type: ${column.type}`}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ alignSelf: "center" }}>
-            {`Clustering order: ${column.clusteringOrder}`}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ alignSelf: "center" }}>
-            {`Position: ${column.position}`}
-          </Typography>
           <TextField
-            label="Note"
-            value={column.note}
-            onChange={(e) => handleColumnChange(index, "note", e.target.value)}
+            label="Table Note"
+            value={formData.note}
+            onChange={(e) => handleTableNoteChange("note", e.target.value)}
             fullWidth
+            multiline
             size="small"
+            maxRows={1}
+            sx={{ width: "50%" }}
           />
-          <TextField
-            label="Tag"
-            value={column.tag}
-            onChange={(e) => handleColumnChange(index, "tag", e.target.value)}
-            fullWidth
-            size="small"
-          />
-        </Box>
-      ))}
 
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleSubmit}
-        sx={{ alignSelf: "flex-end", marginTop: 2 }}
-      >
-        Save Changes
-      </Button>
-    </Box>
+          {/* Edit table tag  */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              padding: "0 5px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              flex: "1 1 35%",
+              maxHeight: 100,
+              height: "40px",
+              overflowY: "auto",
+            }}
+          >
+            {chipData.map((data, index) => (
+              <Chip
+                key={index}
+                label={data}
+                onDelete={handleDeletetableTag(data)}
+                size="small"
+                sx={{ margin: "2px" }}
+              />
+            ))}
+            <TextField
+              variant="standard"
+              placeholder="Add new tag"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={handleAddtableTag}
+              size="small"
+              InputProps={{ disableUnderline: true }}
+              sx={{
+                minWidth: "80px",
+                "& .MuiInputBase-input": { marginLeft: "4px", padding: "0", width: "100%" },
+              }}
+            />
+          </Box>
+
+          <Button variant="contained" color="primary" onClick={() => onSubmit(formData)}>
+            Save
+          </Button>
+        </Box>
+
+        {/* column display table */}
+        <Paper sx={{ height: 400, width: "100%" }}>
+          <DataGrid
+            getRowId={(row) => row.name}
+            rows={formData.columns}
+            columns={columns}
+            initialState={{ pagination: { paginationModel } }}
+            pageSizeOptions={[5, 10, 20]}
+            sx={{ border: 0 }}
+            onRowClick={handleRowClick}
+          />
+        </Paper>
+
+        {/* column note and tag edit dialog  */}
+        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+          <DialogContent dividers>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Edit Column: {editColumnData?.name}
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+              <TextField
+                label="Note"
+                value={editColumnData?.note || ""}
+                onChange={(e) => handleColumnChange("note", e.target.value)}
+                fullWidth
+                multiline
+                size="small"
+                maxRows={1}
+                sx={{ width: "50%" }}
+              />
+              <ChipInput
+                chipData={editColumnData?.tag || []}
+                onAddChip={handleAddTag}
+                onDeleteChip={handleDeleteTag}
+                placeholder="Add a tag"
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} variant="outlined" color="secondary">
+              Close
+            </Button>
+            <Button onClick={handleSaveChanges} variant="contained" color="primary">
+              Save Changes
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </>
   );
 };
 

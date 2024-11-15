@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { Box, Chip, TextField } from "@mui/material";
-
-interface ChipInputProps {
-  chipData: string[];
-  onAddChip: (chip: string) => void;
-  onDeleteChip: (chip: string) => void;
-  placeholder?: string;
-}
+import { ChipInputProps } from "../interfaces/interfaces";
 
 const ChipInput: React.FC<ChipInputProps> = ({
   chipData,
@@ -30,10 +24,10 @@ const ChipInput: React.FC<ChipInputProps> = ({
         display: "flex",
         alignItems: "center",
         flexWrap: "wrap",
-        padding: "6px",
+        padding: "1px",
         border: "1px solid #ccc",
         borderRadius: "4px",
-        
+        width: "60%",
       }}
     >
       {chipData.map((data, index) => (

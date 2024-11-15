@@ -1,69 +1,916 @@
 {
   "Keyspaces": [
     {
-      "name": "Keyspace1",
+      "name": "educator",
       "tables": [
         {
-          "name": "Table1 in Keyspace1",
-          "note": "This is Table1 in Keyspace1",
-          "tag": "Tag1",
-          "columns": [
-            { "name": "Col1", "type": "Int", "clusteringOrder":"none","position":"-1","note": "Integer Column", "tag": "TagCol1" },
-            { "name": "Col2", "type": "Text","clusteringOrder":"asc","position":"1", "note": "Text Column", "tag": "TagCol2" },
-            { "name": "Col3", "type": "Date","clusteringOrder":"asc","position":"2", "note": "Date Column", "tag": "TagCol3" }
+          "name": "active_course",
+          "note": "note for active_course",
+          "tag": [
+            "Tag1"
           ],
-          "primaryKeys": ["Partition key: col3 , Clustering columns: col2 , col3"]
-        
+          "columns": [
+            {
+              "name": "accountid",
+              "type": "uuid",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": 0,
+              "note": "Random note for account ID",
+              "tag": [
+                "Tag1"
+              ]
+            },
+            {
+              "name": "city",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for city",
+              "tag": [
+                "Tag2"
+              ]
+            },
+            {
+              "name": "closedreason",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for closed reason",
+              "tag": [
+                "Tag3"
+              ]
+            },
+            {
+              "name": "closedtime",
+              "type": "timestamp",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for closed time",
+              "tag": [
+                "Tag4"
+              ]
+            },
+            {
+              "name": "costcenter",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for cost center",
+              "tag": [
+                "Tag5"
+              ]
+            },
+            {
+              "name": "country",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for country",
+              "tag": [
+                "Tag6"
+              ]
+            },
+            {
+              "name": "locality",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": 2,
+              "note": "Random note for country",
+              "tag": [
+                "Tag6"
+              ]
+            },
+            {
+              "name": "village",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": 1,
+              "note": "Random note for country",
+              "tag": [
+                "Tag6"
+              ]
+            },
+            {
+              "name": "courseid",
+              "type": "timeuuid",
+              "clusteringOrder": "desc",
+              "kind": "clustering",
+              "position": 0,
+              "note": "Random note for course ID",
+              "tag": [
+                "Tag7"
+              ]
+            },
+            {
+              "name": "additional_course",
+              "type": "timeuuid",
+              "clusteringOrder": "desc",
+              "kind": "clustering",
+              "position": 1,
+              "note": "Random note for course ID",
+              "tag": [
+                "Tag7"
+              ]
+            },
+            {
+              "name": "coursetitle",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for course title",
+              "tag": [
+                "Tag8"
+              ]
+            },
+            {
+              "name": "coursetype",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for course type",
+              "tag": [
+                "Tag9"
+              ]
+            },
+            {
+              "name": "enddate",
+              "type": "date",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for end date",
+              "tag": [
+                "Tag10"
+              ]
+            },
+            {
+              "name": "enrolledspots",
+              "type": "int",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for enrolled spots",
+              "tag": [
+                "Tag11"
+              ]
+            },
+            {
+              "name": "institutelogo",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for institute logo",
+              "tag": [
+                "Tag12"
+              ]
+            },
+            {
+              "name": "institutephoto",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for institute photo",
+              "tag": [
+                "Tag13"
+              ]
+            },
+            {
+              "name": "institutionid",
+              "type": "uuid",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for institution ID",
+              "tag": [
+                "Tag14"
+              ]
+            },
+            {
+              "name": "institutionname",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for institution name",
+              "tag": [
+                "Tag15"
+              ]
+            },
+            {
+              "name": "instructorid",
+              "type": "uuid",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for instructor ID",
+              "tag": [
+                "Tag16"
+              ]
+            },
+            {
+              "name": "instructorname",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for instructor name",
+              "tag": [
+                "Tag17"
+              ]
+            },
+            {
+              "name": "interestedcount",
+              "type": "int",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for interested count",
+              "tag": [
+                "Tag18"
+              ]
+            },
+            {
+              "name": "iscertificationrequired",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for certification requirement",
+              "tag": [
+                "Tag19"
+              ]
+            },
+            {
+              "name": "iscoursedescriptioncomplete",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for course description completeness",
+              "tag": [
+                "Tag20"
+              ]
+            },
+            {
+              "name": "iscreditrequired",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for credit requirement",
+              "tag": [
+                "Tag21"
+              ]
+            },
+            {
+              "name": "isgeneralinfocomplete",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for general info completeness",
+              "tag": [
+                "Tag22"
+              ]
+            },
+            {
+              "name": "islockinterest",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for lock interest",
+              "tag": [
+                "Tag23"
+              ]
+            },
+            {
+              "name": "isprerequisitcoursesrequired",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for prerequisite course requirement",
+              "tag": [
+                "Tag24"
+              ]
+            },
+            {
+              "name": "lastcmlactivityby",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for last activity by",
+              "tag": [
+                "Tag25"
+              ]
+            },
+            {
+              "name": "lastcmlactivitytime",
+              "type": "timestamp",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for last activity time",
+              "tag": [
+                "Tag26"
+              ]
+            },
+            {
+              "name": "lastupdated",
+              "type": "timestamp",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for last updated time",
+              "tag": [
+                "Tag27"
+              ]
+            },
+            {
+              "name": "lastupdatedby",
+              "type": "uuid",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for last updated by",
+              "tag": [
+                "Tag28"
+              ]
+            },
+            {
+              "name": "matchcount",
+              "type": "int",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for match count",
+              "tag": [
+                "Tag29"
+              ]
+            },
+            {
+              "name": "matchfound",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for match found",
+              "tag": [
+                "Tag30"
+              ]
+            },
+            {
+              "name": "numberofspots",
+              "type": "int",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for number of spots",
+              "tag": [
+                "Tag31"
+              ]
+            },
+            {
+              "name": "opeid",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for OPEID",
+              "tag": [
+                "Tag32"
+              ]
+            },
+            {
+              "name": "originalinstructorid",
+              "type": "uuid",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for original instructor ID",
+              "tag": [
+                "Tag33"
+              ]
+            },
+            {
+              "name": "personid",
+              "type": "uuid",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for person ID",
+              "tag": [
+                "Tag34"
+              ]
+            },
+            {
+              "name": "programid",
+              "type": "uuid",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for program ID",
+              "tag": [
+                "Tag35"
+              ]
+            },
+            {
+              "name": "programtitle",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for program title",
+              "tag": [
+                "Tag36"
+              ]
+            },
+            {
+              "name": "registationstartdate",
+              "type": "date",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for registration start date",
+              "tag": [
+                "Tag37"
+              ]
+            },
+            {
+              "name": "startdate",
+              "type": "date",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for start date",
+              "tag": [
+                "Tag38"
+              ]
+            },
+            {
+              "name": "state",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for state",
+              "tag": [
+                "Tag39"
+              ]
+            },
+            {
+              "name": "status",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for status",
+              "tag": [
+                "Tag40"
+              ]
+            },
+            {
+              "name": "studentscount",
+              "type": "int",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for student count",
+              "tag": [
+                "Tag41"
+              ]
+            },
+            {
+              "name": "subjectid",
+              "type": "uuid",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for subject ID",
+              "tag": [
+                "Tag42"
+              ]
+            },
+            {
+              "name": "subjecttitle",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for subject title",
+              "tag": [
+                "Tag43"
+              ]
+            },
+            {
+              "name": "totalcost",
+              "type": "decimal",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for total cost",
+              "tag": [
+                "Tag44"
+              ]
+            },
+            {
+              "name": "totalstudentscount",
+              "type": "int",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for total student count",
+              "tag": [
+                "Tag45"
+              ]
+            }
+          ]
         },
         {
-          "name": "Table2 in Keyspace1",
+          "name": "archive_course",
           "note": "This is Table2 in Keyspace1",
           "tag": "Tag2",
           "columns": [
-            { "name": "Col1", "type": "Int","clusteringOrder":"none","position":"-1", "note": "Integer Column", "tag": "TagCol1" }
-          ],
-          "primaryKeys": ["Partition key: col3 , Clustering columns: col2 , col3"]
+            {
+              "name": "Col1",
+              "type": "Int",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": -1,
+              "note": "Integer Column",
+              "tag": [
+                "TagCol1"
+              ]
+            }
+          ]
         },
         {
-          "name": "Table3 in Keyspace3",
+          "name": "country_opeid_institution",
           "note": "This is Table3",
           "tag": "Tag3",
           "columns": [
-            { "name": "Col1", "type": "Int","clusteringOrder":"none","position":"-1", "note": "Integer Column", "tag": "TagCol1" },
-            { "name": "Col2", "type": "Text","clusteringOrder":"none","position":"-1", "note": "Text Column", "tag": "TagCol2" }
-          ],
-          "primaryKeys": ["Partition key: col3 , Clustering columns: col2 , col3"]
+            {
+              "name": "Col12",
+              "type": "Int",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": -1,
+              "note": "Integer Column",
+              "tag": [
+                "TagCol1"
+              ]
+            },
+            {
+              "name": "Col13",
+              "type": "Int",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": -1,
+              "note": "Integer Column",
+              "tag": [
+                "TagCol1"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "course",
+          "note": "This is Table3",
+          "tag": "Tag3",
+          "columns": [
+            {
+              "name": "Col12",
+              "type": "Int",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": -1,
+              "note": "Integer Column",
+              "tag": [
+                "TagCol1"
+              ]
+            },
+            {
+              "name": "Col13",
+              "type": "Int",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": -1,
+              "note": "Integer Column",
+              "tag": [
+                "TagCol1"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "course_first_match_log",
+          "note": "This is Table3",
+          "tag": "Tag3",
+          "columns": [
+            {
+              "name": "Col12",
+              "type": "Int",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": -1,
+              "note": "Integer Column",
+              "tag": [
+                "TagCol1"
+              ]
+            },
+            {
+              "name": "Col13",
+              "type": "Int",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": -1,
+              "note": "Integer Column",
+              "tag": [
+                "TagCol1"
+              ]
+            }
+          ]
         }
       ],
       "relations": [
-        { "fromTable": "Table1", "fromColumn": "Col1", "toTable": "Table2", "toColumn": "Col1" },
-        { "fromTable": "Table1", "fromColumn": "Col2", "toTable": "Table3", "toColumn": "Col1" }
+        {
+          "fromTable": "Table1",
+          "fromColumn": "Col1",
+          "toTable": "Table2",
+          "toColumn": "Col1"
+        },
+        {
+          "fromTable": "Table1",
+          "fromColumn": "Col2",
+          "toTable": "Table3",
+          "toColumn": "Col1"
+        }
       ]
     },
     {
-      "name": "Keyspace2",
+      "name": "pw2_0_secureeducator",
       "tables": [
         {
-          "name": "Table4 in Keyspace 2",
+          "name": "educator_account",
           "note": "This is Table4",
           "tag": "Tag4",
           "columns": [
-            { "name": "Col4", "type": "Int","clusteringOrder":"none","position":"-1", "note": "Integer Column", "tag": "TagCol4" }
-          ],
-          "primaryKeys": ["Key5"]
+            {
+              "name": "accountid",
+              "type": "uuid",
+              "clusteringOrder": "asc",
+              "kind": "clustering",
+              "position": 0,
+              "note": "Random note for account ID",
+              "tag": [
+                "Tag1"
+              ]
+            },
+            {
+              "name": "accountname",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for account name",
+              "tag": [
+                "Tag2"
+              ]
+            },
+            {
+              "name": "admin",
+              "type": "set<uuid>",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for admin",
+              "tag": [
+                "Tag3"
+              ]
+            },
+            {
+              "name": "bucket",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": 0,
+              "note": "Random note for bucket",
+              "tag": [
+                "Tag4"
+              ]
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for description",
+              "tag": [
+                "Tag5"
+              ]
+            },
+            {
+              "name": "isaccountcomplete",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for account completion",
+              "tag": [
+                "Tag6"
+              ]
+            },
+            {
+              "name": "isblocked",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for blocked status",
+              "tag": [
+                "Tag7"
+              ]
+            },
+            {
+              "name": "iscourseposted",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for course posted",
+              "tag": [
+                "Tag8"
+              ]
+            },
+            {
+              "name": "isfirsttimeaccountcomplete",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for first time account completion",
+              "tag": [
+                "Tag9"
+              ]
+            },
+            {
+              "name": "isoriginalfound",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for original found status",
+              "tag": [
+                "Tag10"
+              ]
+            },
+            {
+              "name": "ispaymenterror",
+              "type": "boolean",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for payment error",
+              "tag": [
+                "Tag11"
+              ]
+            },
+            {
+              "name": "lastupdated",
+              "type": "timestamp",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for last updated timestamp",
+              "tag": [
+                "Tag12"
+              ]
+            },
+            {
+              "name": "lastupdatedby",
+              "type": "uuid",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for last updated by",
+              "tag": [
+                "Tag13"
+              ]
+            },
+            {
+              "name": "paymentmethod",
+              "type": "text",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for payment method",
+              "tag": [
+                "Tag14"
+              ]
+            },
+            {
+              "name": "registrationdate",
+              "type": "timestamp",
+              "clusteringOrder": "none",
+              "kind": "regular",
+              "position": -1,
+              "note": "Random note for registration date",
+              "tag": [
+                "Tag15"
+              ]
+            }
+          ]
         },
         {
-          "name": "Table5 in Keyspace 2",
+          "name": "institution",
           "note": "This is Table5",
           "tag": "Tag5",
           "columns": [
-            { "name": "Col5", "type": "Text","clusteringOrder":"none","position":"-1", "note": "Text Column", "tag": "TagCol5" }
-          ],
-          "primaryKeys": ["Partition key: col3 , Clustering columns: col2 , col3"]
+            {
+              "name": "Col15s",
+              "type": "Int",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": -1,
+              "note": "Integer Column",
+              "tag": [
+                "TagCol1"
+              ]
+            }
+          ]
         }
       ],
       "relations": [
-        { "fromTable": "Table4", "fromColumn": "Col4", "toTable": "Table5", "toColumn": "Col5" }
+        {
+          "fromTable": "Table4",
+          "fromColumn": "Col4",
+          "toTable": "Table5",
+          "toColumn": "Col5"
+        }
+      ]
+    },
+    {
+      "name": "talent",
+      "tables": [
+        {
+          "name": "accesscode_stage",
+          "note": "This is Table4",
+          "tag": "Tag4",
+          "columns": [
+            {
+              "name": "Col14",
+              "type": "Int",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": -1,
+              "note": "Integer Column",
+              "tag": [
+                "TagCol1"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "coach_center",
+          "note": "This is Table5",
+          "tag": "Tag5",
+          "columns": [
+            {
+              "name": "Col15s",
+              "type": "Int",
+              "clusteringOrder": "none",
+              "kind": "partition_key",
+              "position": -1,
+              "note": "Integer Column",
+              "tag": [
+                "TagCol1"
+              ]
+            }
+          ]
+        }
+      ],
+      "relations": [
+        {
+          "fromTable": "Table4",
+          "fromColumn": "Col4",
+          "toTable": "Table5",
+          "toColumn": "Col5"
+        }
       ]
     }
   ]

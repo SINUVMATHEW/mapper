@@ -1,19 +1,24 @@
-export interface PrimaryKey {
+export interface Keyspace {
   name: string;
+  tables: Table[];
+  relations: Relation[];
 }
 
 export interface Table {
   name: string;
   note: string;
-  tag: string;
+  tag: string[];
   columns: Column[];
-  primaryKeys: string[];
 }
 
-export interface Keyspace {
+export interface Column {
   name: string;
-  tables: Table[];
-  relations: Relation[];
+  type: string;
+  clusteringOrder: string;
+  kind: string;
+  position : number
+  note: string;
+  tag: string[];
 }
 
 export interface Relation {
@@ -23,14 +28,6 @@ export interface Relation {
   toColumn: string;
 }
 
-export interface Column {
-  name: string;
-  type: string;
-  clusteringOrder: string;
-  position : number
-  note: string;
-  tag: string;
-}
 
 export interface DataType {
   Keyspaces: Keyspace[];
@@ -55,4 +52,18 @@ export interface AddRelationPopUpProps {
 
 export interface RelationVisualizationProps {
   currentKeyspace: Keyspace;
+}
+
+export interface Row {
+  name: string;
+}
+export interface Params {
+  row: Row;
+}
+
+export interface ChipInputProps {
+  chipData: string[];
+  onAddChip: (chip: string) => void;
+  onDeleteChip: (chip: string) => void;
+  placeholder?: string;
 }

@@ -58,3 +58,46 @@ const MermaidChart: React.FC = () => {
 };
 
 export default MermaidChart;
+
+
+
+ {/* {formData.columns.map((column, index) => (
+          <Box
+            key={column.name}
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "0.4fr 0.4fr 0.8fr 0.5fr 1fr 1.5fr",
+              gap: 1,
+              marginBottom: 1,
+              padding: 0,
+            }}
+          >
+            <Typography variant="body2" color="text.secondary" sx={{ alignSelf: "center" }}>
+              {`Name: ${column.name}`}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ alignSelf: "center" }}>
+              {`Type: ${column.type}`}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ alignSelf: "center" }}>
+              {`Clustering order: ${column.clusteringOrder}`}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ alignSelf: "center" }}>
+              {`Position: ${column.position}`}
+            </Typography>
+
+            <TextField
+              label="Note"
+              value={column.note}
+              onChange={(e) => handleColumnChange(index, "note", e.target.value)}
+              fullWidth
+              size="small"
+            />
+
+            <ChipInput
+              chipData={column.tag}
+              onAddChip={(newTag) => handleAddTag(column.name, newTag)}
+              onDeleteChip={(tag) => handleDeleteTag(column.name, tag)}
+              placeholder="Add a tag"
+            />
+          </Box>
+        ))} */}
