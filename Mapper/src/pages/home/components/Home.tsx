@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "../../../theme/theme";
-import { Table, DataType, RelationSelection } from "../interfaces/interfaces";
+import { Table, RelationSelection, Column } from "../interfaces/interfaces";
 import {
   Select,
   MenuItem,
   Box,
-  SelectChangeEvent,
   Button,
   Autocomplete,
   TextField,
   Card,
   Grid,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import TableEditForm from "./TableEditForm";
 import AddRelationPopUp from "./AddRelationPopUp";
@@ -20,120 +20,141 @@ import NestedFlow from "../../flowchart/flowchartbase";
 import { IoMdCloudUpload } from "react-icons/io";
 
 const Home = () => {
-  const [data, setData] = useState<DataType | null>(null);
+  const [keyspaces, setKeyspaces] = useState([]);
+  const [tables, setTables] = useState<string[]>([]);
   const [selectedKeyspace, setSelectedKeyspace] = useState("");
-  const [selectedTable, setSelectedTable] = useState("");
+  const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const [openPopup, setOpenPopup] = useState(false);
   const [searchData, setSearchData] = useState([]);
+  const [isSearchActive, setIsSearchActive] = useState(false);
   const [query, setQuery] = useState("");
-  
-  const search_parameters = Object.keys(Object.assign({}, ...searchData));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  // const search_parameters = Object.keys(Object.assign({}, ...searchData));
 
+  // fetching keyspaces
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchKeyspaces = async () => {
       try {
-        const response = await fetch("schema.json");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const jsonData = await response.json();
-        setData(jsonData);
-        setSelectedKeyspace(jsonData.Keyspaces[0]?.name || "");
-        setSelectedTable(jsonData.Keyspaces[0]?.tables[0]?.name || "");
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://127.0.0.1:5000/api/keyspace_names');
-        
+        const response = await fetch("http://127.0.0.1:5000/api/keyspace_names");
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-
         const jsonData = await response.json();
-
-        // Update state with fetched data
-        setData(jsonData);
-
-        // Set default selected keyspace and table if available
-        if (jsonData.Keyspaces && jsonData.Keyspaces.length > 0) {
-          setSelectedKeyspace(jsonData.Keyspaces[0]?.name || '');
-          setSelectedTable(jsonData.Keyspaces[0]?.tables[0]?.name || '');
+        setKeyspaces(jsonData);
+        if (jsonData.length > 0) {
+          const firstKeyspace = jsonData[0];
+          setSelectedKeyspace(firstKeyspace);
         }
       } catch (error) {
-        setError(`Error fetching data: ${error.message}`);
+        if (error instanceof Error) {
+          setError(`Error fetching keyspaces: ${error.message}`);
+        } else {
+          setError("An unexpected error occurred.");
+        }
       } finally {
-        setLoading(false);  // Set loading to false once the API call finishes
+        setLoading(false);
       }
     };
-
-    fetchData();
+    fetchKeyspaces();
   }, []);
 
+  // fetching tables
+  useEffect(() => {
+    const fetchTableNames = async () => {
+      if (!selectedKeyspace) return;
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:5000/api/table_names?keyspace_name=${selectedKeyspace}`
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const jsonData = await response.json();
+        setTables(jsonData);
+        if (jsonData.length > 0) {
+          setSelectedTable(jsonData[0]);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(`Error fetching tables: ${error.message}`);
+        } else {
+          setError("An unexpected error occurred.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTableNames();
+  }, [selectedKeyspace]);
 
+  //fetching data for global search
+  useEffect(() => {
+    if (isSearchActive) {
+      const fetchSearchData = async () => {
+        try {
+          const response = await fetch(
+            `http://127.0.0.1:5000/api/get_columns?keyspace_name=${selectedKeyspace}&table_name=${selectedTable}`
+            // `http://127.0.0.1:5000/api/all_data`
+          );
+          if (!response.ok) {
+            throw new Error("Failed to fetch search data");
+          }
+          const data = await response.json();
+          setSearchData(data);
+        } catch (error) {
+          console.error("Error fetching search data:", error);
+        }
+      };
+      fetchSearchData();
+    }
+  }, [isSearchActive, selectedKeyspace, selectedTable]);
 
-
-  const fetchSearchData = () => {
-    return fetch("https://jsonplaceholder.typicode.com/users")
-      .then((res) => res.json())
-
-      .then((d) => setSearchData(d));
+  // make the search active
+  const handleSearchFocus = () => {
+    setIsSearchActive(true);
   };
 
-  useEffect(() => {
-    fetchSearchData();
-  }, []);
-  
+  // keep the search active while typing
+  const handleSearchBlur = () => {
+    setIsSearchActive(false);
+  };
 
-  function search(searchData: any) {
-    return searchData.filter((searchData: any) =>
-      search_parameters.some((parameter) =>
-        searchData[parameter].toString().toLowerCase().includes(query)
-      )
+  // Clear search data when input is empty
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
+    if (value.trim() === "") {
+      setSearchData([]);
+    }
+  };
+
+  const search = (data: Column[]) => {
+    return data.filter(
+      (item: Column) =>
+        item.column_name.toLowerCase().includes(query.toLowerCase()) ||
+        item.type.toLowerCase().includes(query.toLowerCase())
     );
-  }
+  };
 
-  if (!data) {
+  if (!keyspaces) {
     return <Box>Loading...</Box>;
   }
 
-  const currentKeyspace = data.Keyspaces.find((Keyspace) => Keyspace.name === selectedKeyspace);
-
-  const currentTable = currentKeyspace?.tables.find((table) => table.name === selectedTable);
-
-  const handleKeyspaceChange = (event: SelectChangeEvent<string>) => {
-    const KeyspaceName = event.target.value;
-    setSelectedKeyspace(KeyspaceName);
-    const Keyspace = data.Keyspaces.find((ns) => ns.name === KeyspaceName);
-    if (Keyspace && Keyspace.tables.length > 0) {
-      setSelectedTable(Keyspace.tables[0].name);
-    }
-  };
-
-  const handleTableChange = (_: React.SyntheticEvent, newValue: string | null) => {
-    if (newValue) {
-      setSelectedTable(newValue);
-    }
+  const handleTableChange = (event: React.SyntheticEvent, value: string | null) => {
+    setSelectedTable(value);
   };
 
   const handleFormSubmit = (updatedTableData: Table) => {
-    const updatedData = { ...data };
-    const Keyspace = updatedData.Keyspaces.find((ns) => ns.name === selectedKeyspace);
-
-    if (Keyspace) {
-      const tableIndex = Keyspace.tables.findIndex((table) => table.name === selectedTable);
-      if (tableIndex !== -1) {
-        Keyspace.tables[tableIndex] = updatedTableData;
-        setData(updatedData);
-      }
-    }
+    // const updatedData = { ...data };
+    // const Keyspace = updatedData.Keyspaces.find((ns) => ns.name === selectedKeyspace);
+    // if (Keyspace) {
+    //   const tableIndex = Keyspace.tables.findIndex((table) => table.name === selectedTable);
+    //   if (tableIndex !== -1) {
+    //     Keyspace.tables[tableIndex] = updatedTableData;
+    //     setData(updatedData);
+    //   }
+    // }
   };
 
   const handleAddRelation = () => {
@@ -145,149 +166,162 @@ const Home = () => {
   };
 
   const handleRelationFormSubmit = (from: RelationSelection, to: RelationSelection) => {
-    const updatedData = { ...data };
-    const fromKeyspace = updatedData.Keyspaces.find((ns) => ns.name === from.Keyspace);
-    const toKeyspace = updatedData.Keyspaces.find((ns) => ns.name === to.Keyspace);
+    // const updatedData = { ...data };
+    // const fromKeyspace = updatedData.Keyspaces.find((ns) => ns.name === from.Keyspace);
+    // const toKeyspace = updatedData.Keyspaces.find((ns) => ns.name === to.Keyspace);
 
-    if (fromKeyspace && toKeyspace) {
-      fromKeyspace.relations.push({
-        fromTable: from.table,
-        fromColumn: from.column,
-        toTable: to.table,
-        toColumn: to.column,
-      });
+    // if (fromKeyspace && toKeyspace) {
+    //   fromKeyspace.relations.push({
+    //     fromTable: from.table,
+    //     fromColumn: from.column,
+    //     toTable: to.table,
+    //     toColumn: to.column,
+    //   });
 
-      toKeyspace.relations.push({
-        fromTable: to.table,
-        fromColumn: to.column,
-        toTable: from.table,
-        toColumn: from.column,
-      });
+    //   toKeyspace.relations.push({
+    //     fromTable: to.table,
+    //     fromColumn: to.column,
+    //     toTable: from.table,
+    //     toColumn: from.column,
+    //   });
 
-      setData(updatedData);
-    } else {
-      console.error("One or both Keyspaces not found");
-    }
+    //   setData(updatedData);
+    // } else {
+    //   console.error("One or both Keyspaces not found");
+    // }
 
     setOpenPopup(false);
   };
+  console.log(error)
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ p: 2 }}>
-        {/* Select Menus */}
-        <Box
-          sx={{
-            display: "flex",
-            gap: 1,
-            pb: 3,
-            justifyContent: "space-between",
-          }}
-        >
-          <Select
-            value={selectedKeyspace}
-            onChange={handleKeyspaceChange}
-            variant="outlined"
-            size="small"
-            fullWidth
-            sx={{ flex: 1 }}
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        <Box sx={{ p: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              pb: 3,
+              justifyContent: "space-between",
+            }}
           >
-            {data.Keyspaces.map((Keyspace) => (
-              <MenuItem key={Keyspace.name} value={Keyspace.name}>
-                {Keyspace.name}
-              </MenuItem>
-            ))}
-          </Select>
-          <Autocomplete
-            value={selectedTable}
-            onChange={(event, newValue) => handleTableChange(event, newValue)}
-            options={currentKeyspace?.tables.map((table) => table.name) || []}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Select Table"
-                variant="outlined"
-                size="small"
-                fullWidth
+            <Select
+              value={selectedKeyspace}
+              onChange={(e) => setSelectedKeyspace(e.target.value)}
+              variant="outlined"
+              size="small"
+              fullWidth
+              sx={{ flex: 1 }}
+            >
+              {keyspaces.map((keyspace) => (
+                <MenuItem key={keyspace} value={keyspace}>
+                  {keyspace}
+                </MenuItem>
+              ))}
+            </Select>
+
+            <Autocomplete
+              value={selectedTable}
+              onChange={handleTableChange}
+              options={tables}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Select Table"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                />
+              )}
+              size="small"
+              fullWidth
+              sx={{ flex: 1 }}
+            />
+
+            <Button
+              component="label"
+              variant="contained"
+              startIcon={<IoMdCloudUpload />}
+              tabIndex={-1}
+            >
+              Upload files
+              <input
+                type="file"
+                hidden
+                // onChange={handleFileChange}
               />
-            )}
-            size="small"
-            fullWidth
-            sx={{ flex: 1 }}
-          />
-
-          <Button
-            component="label"
-            variant="contained"
-            startIcon={<IoMdCloudUpload />}
-            tabIndex={-1}
-          >
-            Upload files
-            <input
-              type="file"
-              hidden
-              // onChange={handleFileChange}
-            />
-          </Button>
-        </Box>
-
-        {/* global search  */}
-        <Box sx={{ marginTop: 2 }}>
-          <TextField
-            variant="outlined"
-            type="search"
-            id="search-form"
-            name="search-form"
-            fullWidth
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search user"
-          />
-        </Box>
-
-        <Box component="center" sx={{ marginTop: 4 }}>
-          <Grid container spacing={2} justifyContent="center">
-            {search(searchData).map((dataObj: any) => (
-              <Grid item xs={12} sm={6} md={4} key={dataObj.username}>
-                <Card sx={{ padding: 2, borderRadius: 2, boxShadow: 3 }}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    @{dataObj.username}
-                  </Typography>
-                  <Typography variant="h6" component="div" gutterBottom>
-                    {dataObj.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {dataObj.email}
-                  </Typography>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-
-        {/* TableEditForm for selected table */}
-        {currentTable && (
-          <Box sx={{ pb: 3 }}>
-            <TableEditForm tableData={currentTable} onSubmit={handleFormSubmit} />
+            </Button>
           </Box>
-        )}
-
-        {/* Button and Popup for Adding Relations */}
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-          <Button variant="contained" color="secondary" size="small" onClick={handleAddRelation}>
-            Add Relation
-          </Button>
-          {openPopup && (
-            <AddRelationPopUp
-              data={data}
-              onClose={handleClosePopup}
-              onSave={handleRelationFormSubmit}
+          {/* globalsearch */}
+          <Box>
+            <TextField
+              variant="outlined"
+              type="search"
+              id="search-form"
+              name="search-form"
+              fullWidth
+              size="small"
+              onFocus={handleSearchFocus}
+              onBlur={handleSearchBlur}
+              onChange={handleSearchChange}
+              placeholder="Global Search"
             />
+          </Box>
+
+          <Box component="center" sx={{ marginTop: 4 }}>
+            <Grid container spacing={2} justifyContent="center">
+              {search(searchData).map((dataObj: Column) => (
+                <Grid item xs={12} sm={6} md={3} key={dataObj.column_name}>
+                  <Card sx={{ padding: 2, borderRadius: 2, boxShadow: 3, border:"1px solid #5555ee" }}>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      @keyspace: {selectedKeyspace}  @table: {selectedTable}
+                    </Typography>
+                    <Typography variant="subtitle1">
+                      column name: {dataObj.column_name}
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      column type: {dataObj.type}  
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      column kind: {dataObj.kind} 
+                    </Typography>
+                    <Typography variant="subtitle2">
+                      column note: {dataObj.note} column tag: {dataObj.tag}
+                    </Typography>
+                    
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+
+          {/* TableEditForm for selected table */}
+          {selectedKeyspace && (
+            <Box sx={{ pb: 3 }}>
+              <TableEditForm
+                keyspace={selectedKeyspace}
+                table={selectedTable}
+                onSubmit={handleFormSubmit}
+              />
+            </Box>
           )}
+
+          {/* Button and Popup for Adding Relations */}
+          <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
+            <Button variant="contained" color="secondary" size="small" onClick={handleAddRelation} sx={{margin:3}}>
+              Add Relation
+            </Button>
+            {openPopup && (
+              <AddRelationPopUp onClose={handleClosePopup} onSave={handleRelationFormSubmit} />
+            )}
+          </Box>
+          <NestedFlow />
         </Box>
-      </Box>
+      )}
       {/* Relations Visualization */}
-      {/* Flowchart */}
-      <NestedFlow />
     </ThemeProvider>
   );
 };

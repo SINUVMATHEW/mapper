@@ -27,7 +27,7 @@ const initialNodes = [
     data: { label: "educator.active_course" },
     position: { x: 100, y: 100 },
     className: "light",
-    style: { backgroundColor: "rgba(255, 0, 0, 0.2)", width: 170, height: 300 },
+    style: { backgroundColor: "rgba(100, 100, 255, 0.4)", width: 170, height: 300 },
   },
   {
     id: "educator.active_course.accountid",
@@ -68,7 +68,7 @@ const initialNodes = [
     data: { label: "educator.archive_course" },
     position: { x: 300, y: 100 },
     className: "light",
-    style: { backgroundColor: "rgba(255, 0, 0, 0.2)", width: 170, height: 250 },
+    style: { backgroundColor: "rgba(100, 100, 255, 0.4)", width: 170, height: 250 },
   },
   
   {
@@ -106,7 +106,7 @@ const initialNodes = [
     data: { label: "pw2_0_secureeducator.educator_account" },
     position: { x: 500, y: 100 },
     className: "light",
-    style: { backgroundColor: "rgba(255, 0, 0, 0.2)", width: 250
+    style: { backgroundColor: "rgba(100, 100, 255, 0.4)", width: 250
     , height: 250 },
   },
   {

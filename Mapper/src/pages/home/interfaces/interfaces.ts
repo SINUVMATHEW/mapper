@@ -12,11 +12,11 @@ export interface Table {
 }
 
 export interface Column {
-  name: string;
+  column_name: string;
   type: string;
-  clusteringOrder: string;
+  clustering_order: string;
   kind: string;
-  position : number
+  position: number;
   note: string;
   tag: string[];
 }
@@ -28,14 +28,14 @@ export interface Relation {
   toColumn: string;
 }
 
-
 export interface DataType {
   Keyspaces: Keyspace[];
 }
 
 export interface TableEditFormProps {
-  tableData: Table;
-  onSubmit: (updatedTableData: Table) => void;
+  keyspace: string;
+  table: string | null;
+  onSubmit: (updatedTable: Table) => void;
 }
 
 export interface RelationSelection {
@@ -45,7 +45,7 @@ export interface RelationSelection {
 }
 
 export interface AddRelationPopUpProps {
-  data: DataType;
+  // data: DataType;
   onClose: () => void;
   onSave: (from: RelationSelection, to: RelationSelection) => void;
 }
@@ -55,7 +55,7 @@ export interface RelationVisualizationProps {
 }
 
 export interface Row {
-  name: string;
+  column_name: string;
 }
 export interface Params {
   row: Row;
@@ -66,4 +66,11 @@ export interface ChipInputProps {
   onAddChip: (chip: string) => void;
   onDeleteChip: (chip: string) => void;
   placeholder?: string;
+}
+
+export interface FormDataProps {
+  name: string;
+  note: string;
+  tag: string[];
+  columns: Column[];
 }
