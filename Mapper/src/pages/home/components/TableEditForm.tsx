@@ -148,6 +148,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table, onSubmit
   //     }));
   //   }
   // };
+  
   const handleAddColumnTag = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && columnTagInput.trim()) {
       setColumnTags((prev) => [...prev, columnTagInput.trim()]);
