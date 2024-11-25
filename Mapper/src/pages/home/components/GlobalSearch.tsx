@@ -21,7 +21,7 @@ type CustomData = {
   tag: string[];
 };
 
-const Example = () => {
+const GlobalSearch = () => {
   const [data, setData] = useState<CustomData[]>([]);
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -154,6 +154,7 @@ const Example = () => {
         type="search"
         id="search-form"
         name="search-form"
+        autoFocus
         fullWidth
         size="small"
         value={globalFilter}
@@ -164,7 +165,7 @@ const Example = () => {
         }}
         // onFocus={() => setIsSearchActive(true)}
         placeholder="Global Search"
-        sx={{ paddingBottom: 3 }}
+        sx={{ paddingBottom: 3}}
       />
 
       {isSearchActive && (
@@ -178,4 +179,4 @@ const Example = () => {
   );
 };
 
-export default Example;
+export default GlobalSearch;

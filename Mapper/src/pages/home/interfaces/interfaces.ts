@@ -47,7 +47,7 @@ export interface RelationSelection {
 export interface AddRelationPopUpProps {
   // data: DataType;
   onClose: () => void;
-  onSave: (from: RelationSelection, to: RelationSelection) => void;
+  onSave: (isSuccess: boolean) => void;
 }
 
 export interface RelationVisualizationProps {
