@@ -18,6 +18,7 @@ import { Column, FormDataProps, TableEditFormProps } from "../interfaces/interfa
 import { columns as dataGridColumns } from "../constants/constants";
 import axios from "axios";
 import { Refresh } from "@mui/icons-material";
+import { fetchTableData } from "../../../services/api/CommonApi";
 const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table, onSubmit }) => {
   const [formData, setFormData] = useState<FormDataProps>({
     name: table || "",
@@ -44,21 +45,14 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table, onSubmit
           });
           return;
         }
-        const response = await fetch(
-          `http://127.0.0.1:5000/api/get_columns?keyspace_name=${keyspace}&table_name=${table}`
-        );
-        if (!response.ok) {
-          throw new Error(`Error fetching columns: ${response.statusText}`);
-        }
-        const data = await response.json();
-        //transforming for recieving note and tag
-        const transformedColumns = data.map((col: Column) => ({
+        const tableData = await fetchTableData(keyspace, table);
+        const transformedColumns = tableData.data.map((col: Column) => ({
           column_name: col.column_name,
           type: col.type,
           clustering_order: col.clustering_order,
           kind: col.kind,
           position: col.position,
-          note: col.note || "no note", // Fallback for null or undefined
+          note: col.note || "no note", 
           tag: col.tag || "no tags",
         }));
         setFormData({

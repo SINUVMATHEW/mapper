@@ -21,6 +21,8 @@ import NestedFlow from "../../flowchart/flowchartbase";
 import { IoMdCloudUpload } from "react-icons/io";
 import axios from "axios";
 import GlobalSearch from "./GlobalSearch";
+import { fetchKeyspaces, fetchTables } from "../../../services/api/CommonApi";
+import { baseUrl } from "../../../services/api/BaseUrl";
 const Home = () => {
   const [keyspaces, setKeyspaces] = useState([]);
   const [tables, setTables] = useState<string[]>([]);
@@ -31,75 +33,59 @@ const Home = () => {
   const [error, setError] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-
-  // const search_parameters = Object.keys(Object.assign({}, ...searchData));
+  const [snackbarMessage, setSnackbarMessage] = useState(" ");
 
   // fetching keyspaces
   useEffect(() => {
-    const fetchKeyspaces = async () => {
+    const getKeyspaces = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/api/keyspace_names");
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+        const keyspaces = await fetchKeyspaces();
+        setKeyspaces(keyspaces);
+        if (keyspaces.length > 0) {
+          setSelectedKeyspace(keyspaces[0]);
         }
-        const jsonData = await response.json();
-        setKeyspaces(jsonData);
-        if (jsonData.length > 0) {
-          const firstKeyspace = jsonData[0];
-          setSelectedKeyspace(firstKeyspace);
-          setLoading(false);
-        }
+        setLoading(false);
       } catch (error) {
-        if (error instanceof Error) {
-          setError(`Error fetching keyspaces: ${error.message}`);
-          console.log(error.message);
-          setLoading(true);
-        } else {
-          setError("An unexpected error occurred.");
-        }
+        console.error("Error fetching roles:", error);
+        setError(String(error));
+        setLoading(true);
       }
     };
-    fetchKeyspaces();
+    getKeyspaces();
   }, []);
 
   // fetching tables
   useEffect(() => {
-    const fetchTableNames = async () => {
+    const getTableNames = async () => {
       if (!selectedKeyspace) return;
       try {
-        const response = await fetch(
-          `http://127.0.0.1:5000/api/table_names?keyspace_name=${selectedKeyspace}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const jsonData = await response.json();
-        setTables(jsonData);
-        if (jsonData.length > 0) {
-          setSelectedTable(jsonData[0]);
+        const tables = await fetchTables(selectedKeyspace);
+
+        setTables(tables);
+        if (tables.length > 0) {
+          setSelectedTable(tables[0]);
         }
       } catch (error) {
-        if (error instanceof Error) {
-          setError(`Error fetching tables: ${error.message}`);
-        } else {
-          setError("An unexpected error occurred.");
+        {
+          console.error("Error fetching tables", { keyspace: selectedKeyspace, error: error });
         }
       } finally {
         setLoading(false);
       }
     };
-    fetchTableNames();
+    getTableNames();
   }, [selectedKeyspace]);
 
   if (!keyspaces) {
     return <Box>Loading...</Box>;
   }
 
-  const handleTableChange = (event: React.SyntheticEvent, value: string | null) => {
+  const handleTableChange = (_event: React.SyntheticEvent, value: string | null) => {
     setSelectedTable(value);
   };
 
   const handleFormSubmit = (updatedTableData: Table) => {
+    console.log(updatedTableData);
     // const updatedData = { ...data };
     // const Keyspace = updatedData.Keyspaces.find((ns) => ns.name === selectedKeyspace);
     // if (Keyspace) {
@@ -127,7 +113,7 @@ const Home = () => {
   };
 
   const handleSnackbarClose = (
-    event: React.SyntheticEvent | Event,
+    _event: React.SyntheticEvent | Event,
     reason?: SnackbarCloseReason
   ) => {
     if (reason === "clickaway") {
@@ -140,6 +126,7 @@ const Home = () => {
 
   const handleRelationSave = (isSuccess: boolean) => {
     if (isSuccess) {
+      setSnackbarMessage("Relation saved successfully!");
       setSnackbarOpen(true);
     } else {
       alert("Error saving Relation!");
@@ -156,13 +143,16 @@ const Home = () => {
     formData.append("file", selectedFile);
 
     try {
-      const response = await axios.post("http://127.0.0.1:5000/api/upload-file", formData, {
+      const response = await axios.post(baseUrl + "/upload-file", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
       console.log("File uploaded successfully:", response.data);
-      alert(`Success: ${response.data.message}`);
+      setSnackbarMessage("File uploaded successfully");
+      setSnackbarOpen(true);
+      setSelectedFile(null);
+
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("Error uploading file. Please try again.");
@@ -203,7 +193,7 @@ const Home = () => {
             onClose={handleSnackbarClose}
           >
             <Alert severity="success" variant="filled" sx={{ width: "100%" }}>
-              Relation Updated Successfully!
+              {snackbarMessage}
             </Alert>
           </Snackbar>
           <Box sx={{ p: 2 }}>
@@ -252,7 +242,6 @@ const Home = () => {
                 component="label"
                 variant="contained"
                 startIcon={<IoMdCloudUpload />}
-                tabIndex={-1}
               >
                 Upload files
                 <input type="file" hidden onChange={handleFileChange} />

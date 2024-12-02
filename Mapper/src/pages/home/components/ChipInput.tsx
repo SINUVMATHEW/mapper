@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Chip, TextField, Typography } from "@mui/material";
+import { Box, Chip, TextField } from "@mui/material";
 import { ChipInputProps } from "../interfaces/interfaces";
 
 const ChipInput: React.FC<ChipInputProps> = ({
