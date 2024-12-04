@@ -14,6 +14,9 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { AddRelationPopUpProps, Column } from "../interfaces/interfaces";
+import { fetchKeyspaces, fetchTableData, fetchTables } from "../../../services/api/CommonApi";
+import axios from "axios";
+import { baseUrl } from "../../../services/api/BaseUrl";
 
 const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) => {
   const [keyspaces, setKeyspaces] = useState([]);
@@ -31,177 +34,137 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) 
     to_column: "",
     is_published: false,
   });
-  const [error, setError] = useState("");
 
   //  fetch keyspaces
   useEffect(() => {
-    const fetchKeyspaces = async () => {
+    const getKeyspaces = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/api/keyspace_names");
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const jsonData = await response.json();
-        setKeyspaces(jsonData);
-        if (jsonData.length > 0) {
-          const firstKeyspace = jsonData[0];
+        const keyspaces = await fetchKeyspaces();
+        setKeyspaces(keyspaces);
+        if (keyspaces.length > 0) {
           setFormData((prevFormData) => ({
             ...prevFormData,
-            from_keyspace: firstKeyspace,
-            to_keyspace: firstKeyspace,
+            from_keyspace: keyspaces[0],
+            to_keyspace: keyspaces[0],
           }));
         }
       } catch (error) {
-        if (error instanceof Error) {
-          setError(`Error fetching keyspaces: ${error.message}`);
-        } else {
-          setError("An unexpected error occurred.");
-        }
+        console.error("Error fetching roles:", error);
       }
     };
-
-    fetchKeyspaces();
+    getKeyspaces();
   }, []);
 
   //  fetch from Tables
   useEffect(() => {
-    const fetchFromTables = async () => {
+    const getFromTableNames = async () => {
       try {
-        const response = await fetch(
-          `http://127.0.0.1:5000/api/table_names?keyspace_name=${formData.from_keyspace}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const jsonData = await response.json();
-        setFromTables(jsonData);
-        if (jsonData.length > 0) {
-          const firstFromTable = jsonData[0];
+        if (!formData.from_keyspace) return;
+        const tables = await fetchTables(formData.from_keyspace);
+        setFromTables(tables);
+        if (tables.length > 0) {
           setFormData((prevFormData) => ({
             ...prevFormData,
-            from_table: firstFromTable, // Update the specific field
+            from_table: tables[0],
           }));
         }
       } catch (error) {
-        if (error instanceof Error) {
-          setError(`Error fetching keyspaces: ${error.message}`);
-        } else {
-          setError("An unexpected error occurred.");
-        }
+        console.error("Error fetching tables", { keyspace: formData.from_keyspace, error: error });
       }
     };
-    fetchFromTables();
+    getFromTableNames();
   }, [formData.from_keyspace]);
 
   // fetch from columns
   useEffect(() => {
-    const fetchFromColumns = async () => {
+    const getFromColumns = async () => {
       try {
-        const response = await fetch(
-          `http://127.0.0.1:5000/api/get_columns?keyspace_name=${formData.from_keyspace}&table_name=${formData.from_table}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const jsonData = await response.json();
-        const columnNames = jsonData.map((column: Column) => column.column_name);
+        const tableData = await fetchTableData(formData.from_keyspace, formData.from_table);
+        const columnNames = tableData.data.map((column: Column) => column.column_name);
         setFromColumns(columnNames);
-        const firstColumn = fromColumns[0];
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          from_column: firstColumn,
-        }));
-      } catch (error) {
-        if (error instanceof Error) {
-          setError(`Error fetching columns: ${error.message}`);
-        } else {
-          setError("An unexpected error occurred.");
+        if (columnNames.length > 0) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            from_column: columnNames[0],
+          }));
         }
+      } catch (error) {
+        console.error("Error fetching table data", {
+          keyspace: formData.from_keyspace,
+          table: formData.from_table,
+          error: error,
+        });
+        throw new Error(
+          `Error fetching tables for table: ${formData.from_keyspace}.${formData.from_table}`
+        );
       }
     };
-
     if (formData.from_keyspace && formData.from_table) {
-      fetchFromColumns();
+      getFromColumns();
     }
   }, [formData.from_keyspace, formData.from_table]);
 
   //  fetch To Tables
   useEffect(() => {
-    const fetchToTables = async () => {
+    const getToTableNames = async () => {
       try {
-        const response = await fetch(
-          `http://127.0.0.1:5000/api/table_names?keyspace_name=${formData.to_keyspace}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const jsonData = await response.json();
-        setToTables(jsonData);
-        if (jsonData.length > 0) {
-          const firstToTable = jsonData[0];
-          setFormData((prevState) => ({
-            ...prevState,
-            to_table: firstToTable,
+        if (!formData.to_keyspace) return;
+        const tables = await fetchTables(formData.to_keyspace);
+        setToTables(tables);
+        if (tables.length > 0) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            to_table: tables[0],
           }));
         }
       } catch (error) {
-        if (error instanceof Error) {
-          setError(`Error fetching keyspaces: ${error.message}`);
-        } else {
-          setError("An unexpected error occurred.");
-        }
+        console.error("Error fetching tables", { keyspace: formData.to_keyspace, error: error });
       }
     };
-    fetchToTables();
+    getToTableNames();
   }, [formData.to_keyspace]);
 
   // fetch To columns
   useEffect(() => {
-    const fetchToColumns = async () => {
+    const getToColumns = async () => {
       try {
-        const response = await fetch(
-          `http://127.0.0.1:5000/api/get_columns?keyspace_name=${formData.to_keyspace}&table_name=${formData.to_table}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const jsonData = await response.json();
-        const columnNames = jsonData.map((column: Column) => column.column_name);
+        const tableData = await fetchTableData(formData.to_keyspace, formData.to_table);
+        const columnNames = tableData.data.map((column: Column) => column.column_name);
         setToColumns(columnNames);
-        const firstColumn = toColumns[0];
-        setFormData((prevState) => ({
-          ...prevState,
-          to_column: firstColumn,
-        }));
-      } catch (error) {
-        if (error instanceof Error) {
-          setError(`Error fetching columns: ${error.message}`);
-        } else {
-          setError("An unexpected error occurred.");
+        if (columnNames.length > 0) {
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            to_column: columnNames[0],
+          }));
         }
+      } catch (error) {
+        console.error("Error fetching table data", {
+          keyspace: formData.to_keyspace,
+          table: formData.to_table,
+          error: error,
+        });
+        throw new Error(
+          `Error fetching tables for table: ${formData.to_keyspace}.${formData.to_table}`
+        );
       }
     };
-
     if (formData.to_keyspace && formData.to_table) {
-      fetchToColumns();
+      getToColumns();
     }
   }, [formData.to_keyspace, formData.to_table]);
 
-  console.log(error);
-
-  const handleSubmit = async (e:React.MouseEvent<HTMLButtonElement>) => {
+  // post new relation
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/save_relation", {
-        method: "POST",
+      const response = await axios.post(baseUrl + "/save_relation", formData, {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
-        const result = await response.json();
+      if (response.status === 201) {
+        const result = response.data;
         onSave(true);
         onClose();
         setResponseMessage(result.message || "Relation saved successfully!");
@@ -215,21 +178,19 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) 
           is_published: false,
         });
       } else {
-        const error = await response.json();
-        setResponseMessage(error.error || "An error occurred.");
+        setResponseMessage(response.data.error || "An error occurred.");
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setError(`Error fetching keyspaces: ${error.message}`);
+      if (axios.isAxiosError(error)) {
+        console.error("Error saving relation:", error.response?.data || error.message);
+        setResponseMessage(error.response?.data?.error || "An error occurred.");
       } else {
-        setError("An unexpected error occurred.");
+        console.error("An unexpected error occurred:", error);
+        setResponseMessage("An unexpected error occurred.");
       }
     }
   };
 
-  // const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   setPublished(event.target.checked);
-  // };
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
   ) => {
@@ -237,7 +198,7 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) 
 
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value, 
+      [name]: value,
     }));
   };
 

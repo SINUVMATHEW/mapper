@@ -8,6 +8,7 @@ import {
   type MRT_SortingState,
 } from 'material-react-table';
 import { Box, TextField } from '@mui/material';
+import { baseUrl } from '../../../services/api/BaseUrl';
 type CustomData = {
   clustering_order: string;
   column_name: string;
@@ -41,11 +42,8 @@ const GlobalSearch = () => {
       setIsRefetching(true);
 
       try {
-        const url = new URL('http://127.0.0.1:5000/api/filtered_data');
-        url.searchParams.set('start', `${pagination.pageIndex * pagination.pageSize}`);
-        url.searchParams.set('size', `${pagination.pageSize}`);
+        const url = new URL(baseUrl+'/filtered_data');
         url.searchParams.set('search', globalFilter || '');
-        url.searchParams.set('sorting', JSON.stringify(sorting || []));
         const response = await fetch(url.href);
 
         if (!response.ok) {

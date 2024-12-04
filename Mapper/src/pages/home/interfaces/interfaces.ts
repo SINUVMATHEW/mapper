@@ -34,8 +34,7 @@ export interface DataType {
 
 export interface TableEditFormProps {
   keyspace: string;
-  table: string | null;
-  onSubmit: (updatedTable: Table) => void;
+  table: string;
 }
 
 export interface RelationSelection {
@@ -74,3 +73,10 @@ export interface FormDataProps {
   tag: string[];
   columns: Column[];
 }
+
+export type tableDescriptionFormpProps = {
+    keyspace_name: string;
+    table_name: string;
+    note: string;
+    tags: string;
+  };

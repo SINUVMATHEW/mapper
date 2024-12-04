@@ -7,42 +7,29 @@ import {
   MiniMap,
   Controls,
   OnConnect,
+  SmoothStepEdge,
+  Node,
+  Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Box } from "@mui/material";
 import { EdgeBase } from "@xyflow/system";
 import { useEffect, useState } from "react";
 import { Column } from "../home/interfaces/interfaces";
+import "@xyflow/react/dist/style.css";
+import styled from "@emotion/styled";
+import { fetchTableData } from "../../services/api/CommonApi";
+import CustomNode from "./CustomeNode";
+import { baseUrl } from "../../services/api/BaseUrl";
 
-
-const initialNodes = [
-  {
-    id: "educator.active_course",
-    data: { label: "educator.active_course" },
-    position: { x: 100, y: 100 },
-    className: "light",
-    style: { backgroundColor: "rgba(100, 100, 255, 0.4)", width: 170, height: 300 },
-  },
-  {
-    id: "educator.active_course.accountid",
-    data: { label: "accountid" },
-    position: { x: 10, y: 50 },
-    parentId: "educator.active_course",
-  },
-];
-
-const initialEdges = [
-  {
-    id: "ecity-city",
-    source: "educator.active_course.city",
-    target: "pw2_0_secureeducator.educator_account.accountid",
-    animated: true,
-  },
-];
-
+const ControlsStyled = styled(Controls)`
+  button {
+    background-color: #6565bb;
+    color: #ffffff
+`;
 interface NestedFlowProps {
   keyspace: string;
-  table: string | null;
+  table: string;
 }
 interface Relation {
   from_column: string;
@@ -54,173 +41,172 @@ interface Relation {
   to_table: string;
 }
 const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [relations, setRelations] = useState<Relation[]>([]);
-  const [uniqueFromKeyspaceTables,setUniqueFromKeyspaceTables] = useState<string[] | null >();
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  // const [relations, setRelations] = useState<Relation[]>([]);
+  const [uniqueFromKeyspaceTables, setUniqueFromKeyspaceTables] = useState<string[] | null>();
+
+  const nodeTypes = {
+    customNode: CustomNode,
+  };
 
   useEffect(() => {
     // create base node for from table
-    const fetchColumns = async () => {
+    const getColumnData = async () => {
       try {
-        console.log("fetching", keyspace, table);
-        const response = await fetch(
-          `http://127.0.0.1:5000/api/get_columns?keyspace_name=${keyspace}&table_name=${table}`
-        );
-        const data = await response.json();
+        const tableData = await fetchTableData(keyspace, table);
+        // to set the id of parent node
+        const parentId = `${keyspace}.${table}`;
+        // to set the height of parent table node dynamically
+        const variableHeight = (tableData: Column[]) => {
+          return tableData.length * 50 + 50;
+        };
 
         // Create from table parent node
-        const parentId = `${keyspace}.${table}`;
-        const variableHeight = (data: Column[]) => {
-          return data.length * 50 + 50; // to set the height of parent node dynamically 
-        };
         const parentNode = {
           id: parentId,
-          data: { label: parentId },
+          type: "customNode",
+          data: { label1: keyspace, label2: table },
           position: { x: 100, y: 100 },
           className: "light",
           style: {
-            backgroundColor: "rgba(100, 100, 255, 0.4)",
+            backgroundColor: "rgba(200, 50, 50, 0.4)",
             width: 170,
-            height: variableHeight(data),
+            height: variableHeight(tableData.data),
           },
         };
         // Create from table child nodes
-        const childNodes = data.map((column: Column, index: number) => ({
+        const childNodes = tableData.data.map((column: Column, index: number) => ({
           id: `${keyspace}.${table}.${column.column_name}`,
           data: { label: column.column_name },
           position: { x: 10, y: 50 + index * 50 },
           parentId: parentId,
+          sourcePosition: "right",
         }));
         setNodes([parentNode, ...childNodes]);
       } catch (error) {
         console.error("Error fetching nodes:", error);
       }
     };
-    fetchColumns();
+    getColumnData();
   }, [keyspace, table]);
 
   useEffect(() => {
-  // Fetch the relations 
-  const fetchRelations = async () => {
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:5000/api/get_relations?from_keyspace=${keyspace}&from_table=${table}`
-      );
-      const data = await response.json();
-      let uniqueFromKeyspaceTables: string[] | null = null;
-      // Check if the response contains a "message" key indicating no relations
-      if (data.message) {
-        console.log(data.message);
-        setRelations([]); // Set an empty array if no relations exist
-        uniqueFromKeyspaceTables = null; // Set uniqueFromKeyspaceTables to null
-      } else {
-        // Set the fetched relations into state
-        setRelations(data);
-        console.log("Relations fetched", data);
-
-        // Function to get unique from_keyspace.from_table combinations
-        const getUniqueFromKeyspaceTable = (relations: Relation[]) => {
-          const uniqueCombinations = new Set<string>();
-          relations.forEach((relation: Relation) => {
-            const combination = `${relation.to_keyspace}.${relation.to_table}`;
-            uniqueCombinations.add(combination);
-          });
-          return Array.from(uniqueCombinations);
-        };
-
-        // Call the function with the fetched data
-        uniqueFromKeyspaceTables = getUniqueFromKeyspaceTable(data);
-        console.log("Unique combinations:", uniqueFromKeyspaceTables);
-
-        // Build the edges dynamically
-        const newEdges  = data.map((relation: Relation) => {
-          return {
-            id: `${relation.from_keyspace}.${relation.from_table}.${relation.from_column}-to-${relation.to_keyspace}.${relation.to_table}.${relation.to_column}`,
-            source: `${relation.from_keyspace}.${relation.from_table}.${relation.from_column}`,
-            target: `${relation.to_keyspace}.${relation.to_table}.${relation.to_column}`,
-            animated: true,
-          };
-        });
-
-        // Update edges state
-        setEdges((prevEdges) => [...prevEdges, ...newEdges]);
-        console.log("Edges created:", newEdges);
-      }
-
-      // Use uniqueFromKeyspaceTables as needed
-      setUniqueFromKeyspaceTables(uniqueFromKeyspaceTables);
-      console.log("UniqueFromKeyspaceTables:", uniqueFromKeyspaceTables);
-    } catch (error) {
-      console.error("Error fetching relations:", error);
-    }
-  };
-
-  fetchRelations();
-}, [keyspace, table]);
-
-
-
-useEffect(() => {
-  const fetchNodesForRelations = async () => {
-    try {
-      const newNodes: any[] = [];
-      const xOffset = 200; // X position increment for each parent node
-      let currentXPosition = 300; // Initial X position for the first parent node
-
-      for (const uniqueKeyspaceTable of uniqueFromKeyspaceTables) {
-        const [keyspace, table] = uniqueKeyspaceTable.split(".");
-
-        console.log("Fetching data for", keyspace, table);
-
+    // Fetch the relations
+    const fetchRelations = async () => {
+      try {
         const response = await fetch(
-          `http://127.0.0.1:5000/api/get_columns?keyspace_name=${keyspace}&table_name=${table}`
+          baseUrl + `/get_relations?from_keyspace=${keyspace}&from_table=${table}`
         );
         const data = await response.json();
+        let uniqueFromKeyspaceTables: string[] | null = null;
+        // Check if the response contains a "message" key indicating no relations
+        if (data.message) {
+          console.log(data.message);
+          // setRelations([]);
+          uniqueFromKeyspaceTables = null;
+        } else {
+          // setRelations(data);
+          console.log("Relations fetched", data);
 
-        // Create the parent node
-        const parentId = `${keyspace}.${table}`;
-        const variableHeight = (data: Column[]) => {
-          return data.length * 50 + 50; // Multiply the number of rows by 50 for the height
-        };
-        const parentNode = {
-          id: parentId,
-          data: { label: parentId },
-          position: { x: currentXPosition, y: 100 },
-          className: "light",
-          style: {
-            backgroundColor: "rgba(100, 100, 255, 0.4)",
-            width: 170,
-            height: variableHeight(data),
-          },
-        };
-        newNodes.push(parentNode);
+          // Function to get unique from_keyspace.from_table combinations
+          const getUniqueFromKeyspaceTable = (relations: Relation[]) => {
+            const uniqueCombinations = new Set<string>();
+            relations.forEach((relation: Relation) => {
+              const combination = `${relation.to_keyspace}.${relation.to_table}`;
+              uniqueCombinations.add(combination);
+            });
+            return Array.from(uniqueCombinations);
+          };
 
-        // Update X position for the next parent node
-        currentXPosition += xOffset;
+          // Call the function with the fetched data
+          uniqueFromKeyspaceTables = getUniqueFromKeyspaceTable(data);
+          console.log("Unique combinations:", uniqueFromKeyspaceTables);
 
-        // Create child nodes
-        const childNodes = data.map((column: Column, index: number) => ({
-          id: `${keyspace}.${table}.${column.column_name}`,
-          data: { label: column.column_name },
-          position: { x: 10, y: 50 + index * 50 },
-          parentId: parentId,
-        }));
-        newNodes.push(...childNodes);
+          // Build the edges
+          const newEdges = data.map((relation: Relation) => {
+            return {
+              id: `${relation.from_keyspace}.${relation.from_table}.${relation.from_column}
+              -to-${relation.to_keyspace}.${relation.to_table}.${relation.to_column}`,
+              source: `${relation.from_keyspace}.${relation.from_table}.${relation.from_column}`,
+              target: `${relation.to_keyspace}.${relation.to_table}.${relation.to_column}`,
+              style: { stroke: "#000000" },
+              // type: "smoothstep", //edge making styles
+              zIndex: 15,
+              color: "#ff0000",
+              animated: "true",
+              selected: false,
+              selectable: false,
+            };
+          });
+          setEdges((prevEdges) => [...prevEdges, ...newEdges]);
+        }
+        // Use uniqueFromKeyspaceTables as needed
+        setUniqueFromKeyspaceTables(uniqueFromKeyspaceTables);
+        console.log("UniqueFromKeyspaceTables:", uniqueFromKeyspaceTables);
+      } catch (error) {
+        console.error("Error fetching relations:", error);
       }
+    };
+    fetchRelations();
+  }, [keyspace, table]);
 
-      // Add the newly fetched nodes to the existing nodes
-      setNodes((prevNodes) => [...prevNodes, ...newNodes]);
-    } catch (error) {
-      console.error("Error fetching nodes:", error);
-    }
-  };
+  useEffect(() => {
+    const fetchNodesForRelations = async () => {
+      try {
+        if (!uniqueFromKeyspaceTables) return;
+        const newNodes: Node[] = [];
+        const xOffset = 200;
+        let currentXPosition = 300;
+        for (const uniqueKeyspaceTable of uniqueFromKeyspaceTables) {
+          const [toKeyspace, toTable] = uniqueKeyspaceTable.split(".");
+          const toTableData = await fetchTableData(toKeyspace, toTable);
+          // Create the parent node
+          const parentId = `${toKeyspace}.${toTable}`;
+          const variableHeight = (toTableData: Column[]) => {
+            return toTableData.length * 50 + 50;
+          };
+          const parentNode = {
+            id: parentId,
+            type: "customNode",
+            data: { label1: toKeyspace, label2: toTable },
+            position: { x: currentXPosition, y: 100 },
+            // zIndex:10,
+            className: "light",
+            style: {
+              backgroundColor: "rgba(100, 100, 255, 0.4)",
+              width: 170,
+              height: variableHeight(toTableData.data),
+              zIndex: 10,
+            },
+          };
+          newNodes.push(parentNode);
 
-  fetchNodesForRelations();
-}, [uniqueFromKeyspaceTables]);
+          // Update X position for the next parent node
+          currentXPosition += xOffset;
+          // Create child nodes
+          const childNodes = toTableData.data.map((column: Column, index: number) => ({
+            id: `${toKeyspace}.${toTable}.${column.column_name}`,
+            data: {
+              label: `${column.column_name}`,
+            },
+            position: { x: 10, y: 50 + index * 50 },
+            parentId: parentId,
+            targetPosition: "left",
+            zIndex: 12,
+          }));
+          newNodes.push(...childNodes);
+        }
 
+        // Add the newly fetched nodes to the existing nodes
+        setNodes((prevNodes) => [...prevNodes, ...newNodes]);
+      } catch (error) {
+        console.error("Error fetching nodes:", error);
+      }
+    };
 
-
+    fetchNodesForRelations();
+  }, [uniqueFromKeyspaceTables]);
 
   const onConnect: OnConnect = (connection: import("@xyflow/system").Connection) => {
     const newEdge: EdgeBase = {
@@ -229,7 +215,6 @@ useEffect(() => {
       target: connection.target,
       sourceHandle: connection.sourceHandle ?? "",
       targetHandle: connection.targetHandle ?? "",
-      animated: true,
     };
 
     setEdges((eds) => addEdge(newEdge, eds));
@@ -240,16 +225,21 @@ useEffect(() => {
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        edgeTypes={{
+          smoothstep: SmoothStepEdge,
+        }}
         className="react-flow-subflows-example"
-        fitView
+        // fitView
         style={{ height: "600px", width: "100%" }}
       >
         <MiniMap />
         <Controls />
         <Background />
+        <ControlsStyled />
       </ReactFlow>
     </Box>
   );

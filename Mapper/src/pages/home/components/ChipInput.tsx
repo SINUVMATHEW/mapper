@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Chip, TextField, Typography } from "@mui/material";
+import { Box, Chip, TextField } from "@mui/material";
 import { ChipInputProps } from "../interfaces/interfaces";
 
 const ChipInput: React.FC<ChipInputProps> = ({
@@ -11,14 +11,12 @@ const ChipInput: React.FC<ChipInputProps> = ({
   const [tagInput, setTagInput] = useState("");
   const [tableTags, setTableTags] = useState<string[]>(chipData); 
 
-  // This will handle adding tags to the tableTags state
   const handleAddTag = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter" && tagInput.trim()) {
       const newTag = tagInput.trim();
       setTableTags((prev) => [...prev, newTag]);  
-      // onAddChip(newTag);  
       setTagInput("");  
-      event.preventDefault();  // Prevent form submission
+      event.preventDefault();  
     }
   };
 

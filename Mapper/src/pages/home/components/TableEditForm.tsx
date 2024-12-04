@@ -14,91 +14,101 @@ import {
 import Chip from "@mui/material/Chip";
 import { DataGrid, GridRowParams } from "@mui/x-data-grid";
 import Paper from "@mui/material/Paper";
-import { Column, FormDataProps, TableEditFormProps } from "../interfaces/interfaces";
+import { Column, FormDataProps, tableDescriptionFormpProps, TableEditFormProps } from "../interfaces/interfaces";
 import { columns as dataGridColumns } from "../constants/constants";
 import axios from "axios";
-import { Refresh } from "@mui/icons-material";
-const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table, onSubmit }) => {
+import { fetchTableData } from "../../../services/api/CommonApi";
+import { baseUrl } from "../../../services/api/BaseUrl";
+const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
   const [formData, setFormData] = useState<FormDataProps>({
     name: table || "",
     note: "",
     tag: ["new"],
     columns: [],
   });
-  const [tableTags, setTableTags] = useState(["existing tag1", "existing tag2"]); //lookup
+  
+  const [tableTags, setTableTags] = useState([" "]);
   const [tableTagInput, setTableTagInput] = useState("");
-  const [columnTagInput, setColumnTagInput] = useState("");
   const [editColumnData, setEditColumnData] = useState<Column | null>();
-  const [columnTags, setColumnTags] = useState(editColumnData?.tag);
   const [open, setOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [tableDescriptionForm, setTableDescriptionForm] = useState<tableDescriptionFormpProps>({
+    keyspace_name: keyspace,
+    table_name: table,
+    note: "default note ",
+    tags: "default ",
+  });
 
   const fetchColumns = async () => {
-      try {
-        if (!table) {
-          setFormData({
-            name: "",
-            note: "",
-            tag: [],
-            columns: [],
-          });
-          return;
-        }
-        const response = await fetch(
-          `http://127.0.0.1:5000/api/get_columns?keyspace_name=${keyspace}&table_name=${table}`
-        );
-        if (!response.ok) {
-          throw new Error(`Error fetching columns: ${response.statusText}`);
-        }
-        const data = await response.json();
-        //transforming for recieving note and tag
-        const transformedColumns = data.map((col: Column) => ({
-          column_name: col.column_name,
-          type: col.type,
-          clustering_order: col.clustering_order,
-          kind: col.kind,
-          position: col.position,
-          note: col.note || "no note", // Fallback for null or undefined
-          tag: col.tag || "no tags",
-        }));
+    try {
+      if (!table) {
         setFormData({
-          name: table || "no table name",
-          note: " no table note",
-          tag: tableTags,
-          columns: transformedColumns,
+          name: "",
+          note: "",
+          tag: [],
+          columns: [],
         });
-      } catch (error) {
-        console.error("Error fetching columns:", error);
+        return;
       }
-    };
+      const tableData = await fetchTableData(keyspace, table);
+      const transformedColumns = tableData.data.map((col: Column) => ({
+        column_name: col.column_name,
+        type: col.type,
+        clustering_order: col.clustering_order,
+        kind: col.kind,
+        position: col.position,
+        note: col.note || "no note",
+        tag: col.tag || "no tags",
+      }));
+      setFormData({
+        name: table || "no table name",
+        note: " no table note",
+        tag: tableTags,
+        columns: transformedColumns,
+      });
+    } catch (error) {
+      console.error("Error fetching columns:", error);
+    }
+  };
 
   useEffect(() => {
     fetchColumns();
   }, [keyspace, table, tableTags]);
 
-  // useEffect(() => {
-  //   const tags =
-  //     typeof editColumnData?.tag === "string" ? tryParseJSON(editColumnData?.tag) : editColumnData?.tag || ["assa"];
+  useEffect(() => {
+    const fetchTableDescription = async () => {
+      try {
+        const response = await axios.get(baseUrl+"/get_table_description", {
+          params: {
+            keyspace_name: keyspace,
+            table_name: table,
+          },
+        });
 
-  //   setColumnTags(tags);
-  // }, [editColumnData]);
+        if (response.data) {
+          setTableDescriptionForm((prev) => ({
+            ...prev,
+            keyspace_name: response.data.keyspace_name,
+            table_name: response.data.table_name,
+            note: response.data.note,
+            tags: response.data.tag,
+          }));
+          setTableTags(tableDescriptionForm.tags.split(",").map((tag) => tag.trim()));
+        }
+      } catch (error) {
+        console.error("Error fetching table description:", error);
+      }
+    };
 
-  // // Helper function to safely parse a JSON string
-  // function tryParseJSON(str: string) {
-  //   try {
-  //     return JSON.parse(str);
-  //   } catch (e) {
-  //     return [];
-  //   }
-  // }
-
-  
+    fetchTableDescription();
+  }, [keyspace, table, tableDescriptionForm.tags]);
 
   const handleSnackbarClose = (
     event: React.SyntheticEvent | Event,
-    reason?: SnackbarCloseReason,
+    reason?: SnackbarCloseReason
   ) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
 
@@ -107,7 +117,33 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table, onSubmit
 
   // Handle table note change
   const handleTableNoteChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, note: value }));
+    setTableDescriptionForm((prev) => ({ ...prev, note: value }));
+  };
+
+  const handleTableDescriptionSave = async () => {
+    //form copy for synchronous operation
+    const updatedForm = {
+      ...tableDescriptionForm,
+      tags: String(tableTags),
+      table_name: table,
+    };
+    try {
+      const response = await axios.put(baseUrl+"/update_table_description", {
+        keyspace_name: updatedForm.keyspace_name,
+        table_name: updatedForm.table_name,
+        tag: updatedForm.tags,
+        note: updatedForm.note,
+      });
+
+      console.log(response.data);
+      setAlertMessage("Table description updated successfully!");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Error updating table description:", error);
+      setAlertMessage("Table description update failed!");
+      setSnackbarOpen(true);
+    }
+    setTableDescriptionForm(updatedForm);
   };
 
   // Handle table tags
@@ -121,6 +157,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table, onSubmit
   const handleDeleteTableTag = (chipToDelete: string) => {
     setTableTags((chips) => chips.filter((chip) => chip !== chipToDelete));
   };
+
   // Open dialog for editing column ///old was Params data type
   const handleRowClick = (params: GridRowParams) => {
     const matchedColumn = formData.columns.find(
@@ -132,33 +169,6 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table, onSubmit
     } else {
       console.error("No matching column found.");
     }
-  };
-
-  console.log("col tag is ", columnTags);
-  console.log("col tag sourse ", editColumnData?.tag);
-  console.log("col tag is ", typeof columnTags);
-  console.log("table tag is ", typeof tableTags);
-
-  // Column tag handling
-  // const handleAddColumnTag = (newTag: string) => {
-  //   if (editColumnData) {
-  //     setEditColumnData((prevData) => ({
-  //       ...prevData!,
-  //       tag: [...prevData!.tag, newTag],
-  //     }));
-  //   }
-  // };
-  
-  const handleAddColumnTag = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" && columnTagInput.trim()) {
-      setColumnTags((prev) => [...prev, columnTagInput.trim()]);
-      setColumnTagInput("");
-      event.preventDefault();
-    }
-  };
-
-  const handleDeleteColumnTag = (tagToDelete: string) => {
-    setColumnTags((prev) => prev.filter((chip) => chip !== tagToDelete));
   };
 
   // Edit column field handling
@@ -182,24 +192,17 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table, onSubmit
     };
 
     try {
-      const response = await axios.post("http://127.0.0.1:5000/api/update_column_tag", sendData);
+      const response = await axios.put(baseUrl+"/update_column_tag", sendData);
       console.log(response.data);
       handleClose();
-       // Close the dialog after saving
       fetchColumns();
+      setAlertMessage("Column Updated Successfully!");
       setSnackbarOpen(true);
     } catch (error) {
       console.error("Error updating column:", error);
     }
   };
 
-  //generating unique IDs for each columns
-  // const rowsWithId = formData.columns.map((column, index) => ({
-  //   ...column,
-  //   id: `${column.column_name}-${index}`,
-  // }));
-
-  // Close dialog
   const handleClose = () => {
     setOpen(false);
     setEditColumnData(null);
@@ -214,7 +217,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table, onSubmit
         onClose={handleSnackbarClose}
       >
         <Alert severity="success" variant="filled" sx={{ width: "100%" }}>
-          Column Updated Successfully!
+          {alertMessage}
         </Alert>
       </Snackbar>
       <Box
@@ -244,8 +247,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table, onSubmit
           }}
         >
           <TextField
-            label="Table Note"
-            value={formData.note}
+            value={tableDescriptionForm.note}
             onChange={(e) => handleTableNoteChange(e.target.value)}
             fullWidth
             multiline
@@ -291,11 +293,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table, onSubmit
               }}
             />
           </Box>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => onSubmit({ ...formData, tag: tableTags })}
-          >
+          <Button variant="contained" color="primary" onClick={handleTableDescriptionSave}>
             Save
           </Button>
         </Box>
@@ -361,50 +359,3 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table, onSubmit
 };
 
 export default TableEditForm;
-
-{
-  /* <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  padding: "1px",
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                  width: "60%",
-                }}
-              >
-                <Typography>{columnTags}</Typography>
-
-                {columnTags.map((tag, index) => (
-                    <Chip
-                      key={index}
-                      label={tag}
-                      onDelete={() => handleDeleteColumnTag(tag)}
-                      size="small"
-                      sx={{ margin: "2px" }}
-                    />
-                  ))}
-
-                <TextField
-                  variant="standard"
-                  placeholder="add new tag"
-                  value={columnTagInput}
-                  onChange={(e) => setColumnTagInput(e.target.value)}
-                  onKeyDown={handleAddColumnTag}
-                  size="small"
-                  InputProps={{
-                    disableUnderline: true,
-                    style: { marginLeft: "4px", flexGrow: 1 },
-                  }}
-                  sx={{
-                    minWidth: "80px",
-                    "& .MuiInputBase-input": {
-                      marginLeft: "4px",
-                      flexGrow: 1,
-                      padding: "0",
-                    },
-                  }}
-                />
-              </Box> */
-}
