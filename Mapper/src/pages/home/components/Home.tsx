@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "../../../theme/theme";
-import { Table } from "../interfaces/interfaces";
 import {
   Select,
   MenuItem,
@@ -27,7 +26,7 @@ const Home = () => {
   const [keyspaces, setKeyspaces] = useState([]);
   const [tables, setTables] = useState<string[]>([]);
   const [selectedKeyspace, setSelectedKeyspace] = useState("");
-  const [selectedTable, setSelectedTable] = useState<string | null>(null);
+  const [selectedTable, setSelectedTable] = useState("");
   const [openPopup, setOpenPopup] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -81,20 +80,7 @@ const Home = () => {
   }
 
   const handleTableChange = (_event: React.SyntheticEvent, value: string | null) => {
-    setSelectedTable(value);
-  };
-
-  const handleFormSubmit = (updatedTableData: Table) => {
-    console.log(updatedTableData);
-    // const updatedData = { ...data };
-    // const Keyspace = updatedData.Keyspaces.find((ns) => ns.name === selectedKeyspace);
-    // if (Keyspace) {
-    //   const tableIndex = Keyspace.tables.findIndex((table) => table.name === selectedTable);
-    //   if (tableIndex !== -1) {
-    //     Keyspace.tables[tableIndex] = updatedTableData;
-    //     setData(updatedData);
-    //   }
-    // }
+    if (value !== null) setSelectedTable(value);
   };
 
   const handleAddRelation = () => {
@@ -152,7 +138,6 @@ const Home = () => {
       setSnackbarMessage("File uploaded successfully");
       setSnackbarOpen(true);
       setSelectedFile(null);
-
     } catch (error) {
       console.error("Error uploading file:", error);
       alert("Error uploading file. Please try again.");
@@ -238,11 +223,7 @@ const Home = () => {
                 sx={{ flex: 1 }}
               />
 
-              <Button
-                component="label"
-                variant="contained"
-                startIcon={<IoMdCloudUpload />}
-              >
+              <Button component="label" variant="contained" startIcon={<IoMdCloudUpload />}>
                 Upload files
                 <input type="file" hidden onChange={handleFileChange} />
               </Button>
@@ -261,11 +242,7 @@ const Home = () => {
             {/* TableEditForm for selected table */}
             {selectedKeyspace && (
               <Box sx={{ pb: 3 }}>
-                <TableEditForm
-                  keyspace={selectedKeyspace}
-                  table={selectedTable}
-                  onSubmit={handleFormSubmit}
-                />
+                <TableEditForm keyspace={selectedKeyspace} table={selectedTable} />
               </Box>
             )}
 
@@ -291,7 +268,6 @@ const Home = () => {
           </Box>
         </>
       )}
-      {/* Relations Visualization */}
     </ThemeProvider>
   );
 };

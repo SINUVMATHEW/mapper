@@ -20,6 +20,7 @@ import "@xyflow/react/dist/style.css";
 import styled from "@emotion/styled";
 import { fetchTableData } from "../../services/api/CommonApi";
 import CustomNode from "./CustomeNode";
+import { baseUrl } from "../../services/api/BaseUrl";
 
 const ControlsStyled = styled(Controls)`
   button {
@@ -46,8 +47,8 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
   const [uniqueFromKeyspaceTables, setUniqueFromKeyspaceTables] = useState<string[] | null>();
 
   const nodeTypes = {
-  customNode: CustomNode,
-};
+    customNode: CustomNode,
+  };
 
   useEffect(() => {
     // create base node for from table
@@ -64,8 +65,8 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
         // Create from table parent node
         const parentNode = {
           id: parentId,
-          type: 'customNode',
-          data: { label1: keyspace, label2: table },       
+          type: "customNode",
+          data: { label1: keyspace, label2: table },
           position: { x: 100, y: 100 },
           className: "light",
           style: {
@@ -80,7 +81,7 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
           data: { label: column.column_name },
           position: { x: 10, y: 50 + index * 50 },
           parentId: parentId,
-          sourcePosition: 'right',
+          sourcePosition: "right",
         }));
         setNodes([parentNode, ...childNodes]);
       } catch (error) {
@@ -88,14 +89,14 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
       }
     };
     getColumnData();
-  }, [keyspace, table ]);
+  }, [keyspace, table]);
 
   useEffect(() => {
     // Fetch the relations
     const fetchRelations = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:5000/api/get_relations?from_keyspace=${keyspace}&from_table=${table}`
+          baseUrl + `/get_relations?from_keyspace=${keyspace}&from_table=${table}`
         );
         const data = await response.json();
         let uniqueFromKeyspaceTables: string[] | null = null;
@@ -133,7 +134,7 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
               // type: "smoothstep", //edge making styles
               zIndex: 15,
               color: "#ff0000",
-              animated:"true",
+              animated: "true",
               selected: false,
               selectable: false,
             };
@@ -167,8 +168,8 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
           };
           const parentNode = {
             id: parentId,
-            type: 'customNode',
-            data: {  label1:toKeyspace, label2: toTable},
+            type: "customNode",
+            data: { label1: toKeyspace, label2: toTable },
             position: { x: currentXPosition, y: 100 },
             // zIndex:10,
             className: "light",
@@ -191,7 +192,7 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
             },
             position: { x: 10, y: 50 + index * 50 },
             parentId: parentId,
-            targetPosition: 'left',
+            targetPosition: "left",
             zIndex: 12,
           }));
           newNodes.push(...childNodes);
@@ -229,7 +230,7 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         edgeTypes={{
-        smoothstep: SmoothStepEdge,
+          smoothstep: SmoothStepEdge,
         }}
         className="react-flow-subflows-example"
         // fitView

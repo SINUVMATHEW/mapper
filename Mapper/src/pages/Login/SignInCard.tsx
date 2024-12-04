@@ -7,13 +7,12 @@ import Divider from '@mui/material/Divider';
 import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
-// import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
-// import ForgotPassword from './ForgotPassword';
 import { BsMicrosoft } from 'react-icons/bs';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/auth/AuthProvider';
+import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -34,29 +33,28 @@ const Card = styled(MuiCard)(({ theme }) => ({
 }));
 
 export default function SignInCard() {
+  const { login } = useAuth();
+  const navigate = useNavigate(); // Get the navigate function from react-router-dom
+
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  // const [open, setOpen] = React.useState(false);
-  const navigate = useNavigate();
-
-  // const handleClickOpen = () => {
-  //   setOpen(true);
-  // };
-
-  // const handleClose = () => {
-  //   setOpen(false);
-  // };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
     if (emailError || passwordError) {
-      event.preventDefault();
-      
-      
       return;
     }
-    navigate('/');
+
+    const isValid = validateInputs();
+    if (isValid) {
+      login(); // Assuming login handles authentication logic
+
+      // Redirect to the home page after login
+      navigate('/home'); // Use navigate to redirect to the home page
+    }
   };
 
   const validateInputs = () => {
@@ -64,7 +62,6 @@ export default function SignInCard() {
     const password = document.getElementById('password') as HTMLInputElement;
 
     let isValid = true;
-    
 
     if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
       setEmailError(true);
@@ -85,16 +82,14 @@ export default function SignInCard() {
     }
 
     return isValid;
-    
   };
 
   return (
     <Card variant="outlined">
-      
       <Typography
         component="h4"
         variant="h5"
-        sx={{ width: '100%', fontSize: '2rem', color:'56413E' }}
+        sx={{ width: '100%', fontSize: '2rem', color: '56413E' }}
       >
         Sign in
       </Typography>
@@ -125,15 +120,6 @@ export default function SignInCard() {
         <FormControl>
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <FormLabel htmlFor="password">Password</FormLabel>
-            {/* <Link
-              component="button"
-              type="button"
-              onClick={handleClickOpen}
-              variant="body2"
-              sx={{ alignSelf: 'baseline' }}
-            >
-              Forgot your password?
-            </Link> */}
           </Box>
           <TextField
             error={passwordError}
@@ -152,14 +138,12 @@ export default function SignInCard() {
           />
         </FormControl>
         <FormControlLabel
-          control={<Checkbox value="remember" color='default' />}
+          control={<Checkbox value="remember" color="default" />}
           label="Remember me"
         />
-        {/* <ForgotPassword open={open} handleClose={handleClose} /> */}
-        <Button type="submit" fullWidth variant="contained" onClick={validateInputs} sx={{backgroundColor:'#56413E'}}>
+        <Button type="submit" fullWidth variant="contained" sx={{ backgroundColor: '#56413E' }}>
           Sign in
         </Button>
-
       </Box>
       <Divider>or</Divider>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -167,13 +151,12 @@ export default function SignInCard() {
           fullWidth
           variant="outlined"
           size="small"
-          sx={{color:'#56413E', borderColor:'#56413E'}}
+          sx={{ color: '#56413E', borderColor: '#56413E' }}
           onClick={() => alert('Sign in with Microsoft')}
           startIcon={<BsMicrosoft />}
         >
           Sign in with Microsoft Account
         </Button>
-       
       </Box>
     </Card>
   );

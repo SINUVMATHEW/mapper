@@ -15,8 +15,8 @@ import {
 } from "@mui/material";
 import { AddRelationPopUpProps, Column } from "../interfaces/interfaces";
 import { fetchKeyspaces, fetchTableData, fetchTables } from "../../../services/api/CommonApi";
-// import { AxiosError } from "axios";
 import axios from "axios";
+import { baseUrl } from "../../../services/api/BaseUrl";
 
 const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) => {
   const [keyspaces, setKeyspaces] = useState([]);
@@ -153,19 +153,15 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) 
     }
   }, [formData.to_keyspace, formData.to_table]);
 
-   // post new relation
+  // post new relation
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:5000/api/save_relation",
-        formData, // Axios automatically stringifies the object
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.post(baseUrl + "/save_relation", formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.status === 201) {
         const result = response.data;
@@ -195,9 +191,6 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) 
     }
   };
 
-  // const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   setPublished(event.target.checked);
-  // };
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
   ) => {
