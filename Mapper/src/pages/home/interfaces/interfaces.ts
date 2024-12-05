@@ -1,52 +1,82 @@
-export interface PrimaryKey {
-    name: string;
+export interface Keyspace {
+  name: string;
+  tables: Table[];
+  relations: Relation[];
 }
 
 export interface Table {
-    name: string;
-    note: string;
-    tag: string;
-    columns: Column[];
-    primaryKeys: string[];
-}
-
-export interface Namespace {
-    name: string;
-    tables: Table[];
-    relations: Relation[];
-}
-
-export interface Relation {
-    fromTable: string;
-    fromColumn: string;
-    toTable: string;
-    toColumn: string;
+  name: string;
+  note: string;
+  tag: string[];
+  columns: Column[];
 }
 
 export interface Column {
-    name: string;
-    type: string;
-    note: string;
-    tag: string;
+  column_name: string;
+  type: string;
+  clustering_order: string;
+  kind: string;
+  position: number;
+  note?: string | null;
+  tag?: string[];
 }
 
-export  interface DataType {
-    namespaces: Namespace[];
+export interface Relation {
+  fromTable: string;
+  fromColumn: string;
+  toTable: string;
+  toColumn: string;
 }
-  
+
+export interface DataType {
+  Keyspaces: Keyspace[];
+}
+
 export interface TableEditFormProps {
-  tableData: Table;
-  onSubmit: (updatedTableData: Table) => void;
+  keyspace: string;
+  table: string;
 }
 
 export interface RelationSelection {
-  namespace: string | undefined;
+  Keyspace: string | undefined;
   table: string;
   column: string;
 }
 
 export interface AddRelationPopUpProps {
-  data: DataType
+  // data: DataType;
   onClose: () => void;
-  onSave: (from: RelationSelection, to: RelationSelection) => void;
+  onSave: (isSuccess: boolean) => void;
 }
+
+export interface RelationVisualizationProps {
+  currentKeyspace: Keyspace;
+}
+
+export interface Row {
+  column_name: string;
+}
+export interface Params {
+  row: Row;
+}
+
+export interface ChipInputProps {
+  chipData: string[];
+  onAddChip: (chip: string) => void;
+  onDeleteChip: (chip: string) => void;
+  placeholder?: string;
+}
+
+export interface FormDataProps {
+  name: string;
+  note: string;
+  tag: string[];
+  columns: Column[];
+}
+
+export type tableDescriptionFormpProps = {
+    keyspace_name: string;
+    table_name: string;
+    note: string;
+    tags: string;
+  };

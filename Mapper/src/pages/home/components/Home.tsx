@@ -1,72 +1,86 @@
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "../../../theme/theme";
-import { Table, Relation, DataType,RelationSelection } from "../interfaces/interfaces";
-import { Select, MenuItem, Box, SelectChangeEvent, Button } from "@mui/material";
+import {
+  Select,
+  MenuItem,
+  Box,
+  Button,
+  Autocomplete,
+  TextField,
+  Typography,
+  Skeleton,
+  SnackbarCloseReason,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import TableEditForm from "./TableEditForm";
 import AddRelationPopUp from "./AddRelationPopUp";
-
+import NestedFlow from "../../flowchart/flowchartbase";
+import { IoMdCloudUpload } from "react-icons/io";
+import axios from "axios";
+import GlobalSearch from "./GlobalSearch";
+import { fetchKeyspaces, fetchTables } from "../../../services/api/CommonApi";
+import { baseUrl } from "../../../services/api/BaseUrl";
 const Home = () => {
- 
-
-  const [data, setData] = useState<DataType | null>(null);
-  const [selectedNamespace, setSelectedNamespace] = useState("");
+  const [keyspaces, setKeyspaces] = useState([]);
+  const [tables, setTables] = useState<string[]>([]);
+  const [selectedKeyspace, setSelectedKeyspace] = useState("");
   const [selectedTable, setSelectedTable] = useState("");
   const [openPopup, setOpenPopup] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState(" ");
 
+  // fetching keyspaces
   useEffect(() => {
-    const fetchData = async () => {
+    const getKeyspaces = async () => {
       try {
-        const response = await fetch("schema.json");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        const keyspaces = await fetchKeyspaces();
+        setKeyspaces(keyspaces);
+        if (keyspaces.length > 0) {
+          setSelectedKeyspace(keyspaces[0]);
         }
-        const jsonData = await response.json();
-        setData(jsonData);
-        setSelectedNamespace(jsonData.namespaces[0]?.name || "");
-        setSelectedTable(jsonData.namespaces[0]?.tables[0]?.name || "");
+        setLoading(false);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching roles:", error);
+        setError(String(error));
+        setLoading(true);
       }
     };
-
-    fetchData();
+    getKeyspaces();
   }, []);
 
-  if (!data) {
+  // fetching tables
+  useEffect(() => {
+    const getTableNames = async () => {
+      if (!selectedKeyspace) return;
+      try {
+        const tables = await fetchTables(selectedKeyspace);
+
+        setTables(tables);
+        if (tables.length > 0) {
+          setSelectedTable(tables[0]);
+        }
+      } catch (error) {
+        {
+          console.error("Error fetching tables", { keyspace: selectedKeyspace, error: error });
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    getTableNames();
+  }, [selectedKeyspace]);
+
+  if (!keyspaces) {
     return <Box>Loading...</Box>;
   }
 
-  const currentNamespace = data.namespaces.find(
-    (namespace) => namespace.name === selectedNamespace
-  );
-
-  const currentTable = currentNamespace?.tables.find((table) => table.name === selectedTable);
-
-  const handleNamespaceChange = (event: SelectChangeEvent<string>) => {
-    const namespaceName = event.target.value;
-    setSelectedNamespace(namespaceName);
-    const namespace = data.namespaces.find((ns) => ns.name === namespaceName);
-    if (namespace && namespace.tables.length > 0) {
-      setSelectedTable(namespace.tables[0].name);
-    }
-  };
-
-  const handleTableChange = (event: SelectChangeEvent<string>) => {
-    setSelectedTable(event.target.value as string);
-  };
-
-  const handleFormSubmit = (updatedTableData: Table) => {
-    const updatedData = { ...data };
-    const namespace = updatedData.namespaces.find((ns) => ns.name === selectedNamespace);
-
-    if (namespace) {
-      const tableIndex = namespace.tables.findIndex((table) => table.name === selectedTable);
-      if (tableIndex !== -1) {
-        namespace.tables[tableIndex] = updatedTableData;
-        setData(updatedData);
-      }
-    }
+  const handleTableChange = (_event: React.SyntheticEvent, value: string | null) => {
+    if (value !== null) setSelectedTable(value);
   };
 
   const handleAddRelation = () => {
@@ -77,99 +91,183 @@ const Home = () => {
     setOpenPopup(false);
   };
 
-const handleRelationFormSubmit = (
-  from: RelationSelection,
-  to: RelationSelection
-) => {
-  const updatedData = { ...data }; 
-  const fromNamespace = updatedData.namespaces.find(ns => ns.name === from.namespace);
-  const toNamespace = updatedData.namespaces.find(ns => ns.name === to.namespace);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
 
-  if (fromNamespace && toNamespace) {
-    fromNamespace.relations.push({
-      fromTable: from.table,
-      fromColumn: from.column,
-      toTable: to.table,
-      toColumn: to.column,
-    });
+  const handleSnackbarClose = (
+    _event: React.SyntheticEvent | Event,
+    reason?: SnackbarCloseReason
+  ) => {
+    if (reason === "clickaway") {
+      setSnackbarOpen(false);
+      return;
+    }
 
-    toNamespace.relations.push({
-      fromTable: to.table,
-      fromColumn: to.column,
-      toTable: from.table,
-      toColumn: from.column,
-    });
+    setSnackbarOpen(false);
+  };
 
-    setData(updatedData); 
-  } else {
-    console.error('One or both namespaces not found'); 
-  }
+  const handleRelationSave = (isSuccess: boolean) => {
+    if (isSuccess) {
+      setSnackbarMessage("Relation saved successfully!");
+      setSnackbarOpen(true);
+    } else {
+      alert("Error saving Relation!");
+    }
+  };
 
-  setOpenPopup(false); 
-};
+  const handleFileUpload = async () => {
+    if (!selectedFile) {
+      alert("Please select a file to upload.");
+      return;
+    }
 
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+      const response = await axios.post(baseUrl + "/upload-file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("File uploaded successfully:", response.data);
+      setSnackbarMessage("File uploaded successfully");
+      setSnackbarOpen(true);
+      setSelectedFile(null);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Error uploading file. Please try again.");
+    }
+  };
+
+  console.log(error);
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ p: 2 }}>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent:"space-around",
-            gap: 2,
-            pb: 4,
-          }}
-        >
-          <Select value={selectedNamespace} onChange={handleNamespaceChange} fullWidth>
-            {data.namespaces.map((namespace) => (
-              <MenuItem key={namespace.name} value={namespace.name}>
-                {namespace.name}
-              </MenuItem>
-            ))}
-          </Select>
-          <Select value={selectedTable} onChange={handleTableChange} fullWidth>
-            {currentNamespace?.tables.map((table) => (
-              <MenuItem key={table.name} value={table.name}>
-                {table.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </Box>
-
-        {/* TableEditForm for selected table */}
-
-        {currentTable && (
-          <TableEditForm tableData={currentTable} onSubmit={handleFormSubmit} />
-        )}
-      </Box>
-
-      {/* Relations Visualisation  */}
-      <Box>
-        <h3>Relations</h3>
-        {currentNamespace?.relations.map((relation: Relation, index: number) => (
-          <Box key={index}>
-            <p>
-              {relation.fromTable}.{relation.fromColumn} → {relation.toTable}.{relation.toColumn}
-            </p>
+      {loading ? (
+        <Box>
+          <Typography align="center">{error}</Typography>
+          <Box
+            sx={{
+              display: "flex",
+              alignContent: "center",
+              justifyContent: "space-between",
+              padding: 2,
+            }}
+          >
+            <Skeleton variant="rectangular" width={"40%"} height={40} />
+            <Skeleton variant="rectangular" width={"40%"} height={40} />
+            <Skeleton variant="rectangular" width={"10%"} height={40} />
           </Box>
-        ))}
-      </Box>
+          <Skeleton animation="wave" />
+          <Skeleton animation="wave" />
+          <Skeleton animation="wave" />
+          <Skeleton variant="rectangular" width={"100%"} height={200} />
+          {/* <CircularProgress color="primary" /> */}
+        </Box>
+      ) : (
+        <>
+          <Snackbar
+            open={snackbarOpen}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            autoHideDuration={5000}
+            onClose={handleSnackbarClose}
+          >
+            <Alert severity="success" variant="filled" sx={{ width: "100%" }}>
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
+          <Box sx={{ p: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+                pb: 3,
+                justifyContent: "space-between",
+              }}
+            >
+              <Select
+                value={selectedKeyspace}
+                onChange={(e) => setSelectedKeyspace(e.target.value)}
+                variant="outlined"
+                size="small"
+                fullWidth
+                sx={{ flex: 1 }}
+              >
+                {keyspaces.map((keyspace) => (
+                  <MenuItem key={keyspace} value={keyspace}>
+                    {keyspace}
+                  </MenuItem>
+                ))}
+              </Select>
 
-      {/* Popup for adding relations */}
-      
-      <Button variant="contained" color="secondary" onClick={handleAddRelation}>
-        Add Relation
-      </Button>
+              <Autocomplete
+                value={selectedTable}
+                onChange={handleTableChange}
+                options={tables}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Select Table"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                  />
+                )}
+                size="small"
+                fullWidth
+                sx={{ flex: 1 }}
+              />
 
-      {openPopup && (
-        <AddRelationPopUp
-          data={data}
-          onClose={handleClosePopup}
-          onSave={handleRelationFormSubmit}
-        />
+              <Button component="label" variant="contained" startIcon={<IoMdCloudUpload />}>
+                Upload files
+                <input type="file" hidden onChange={handleFileChange} />
+              </Button>
+              {selectedFile && <p>Selected File: {selectedFile.name}</p>}
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleFileUpload}
+                disabled={!selectedFile}
+              >
+                Submit File
+              </Button>
+            </Box>
+            {/* globalsearch */}
+            <GlobalSearch />
+            {/* TableEditForm for selected table */}
+            {selectedKeyspace && (
+              <Box sx={{ pb: 3 }}>
+                <TableEditForm keyspace={selectedKeyspace} table={selectedTable} />
+              </Box>
+            )}
+
+            {/* Button and Popup for Adding Relations */}
+            <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
+              <Button
+                variant="contained"
+                color="secondary"
+                size="small"
+                onClick={handleAddRelation}
+                sx={{ margin: 3 }}
+              >
+                Add Relation
+              </Button>
+              {openPopup && (
+                <AddRelationPopUp
+                  onClose={handleClosePopup}
+                  onSave={() => handleRelationSave(true)}
+                />
+              )}
+            </Box>
+            <NestedFlow keyspace={selectedKeyspace} table={selectedTable} />
+          </Box>
+        </>
       )}
-
     </ThemeProvider>
   );
 };

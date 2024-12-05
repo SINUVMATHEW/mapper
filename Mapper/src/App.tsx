@@ -1,15 +1,13 @@
-import './App.css'
-import Home from './pages/home/components/Home'
+import "./App.css";
+import { AuthProvider } from "./hooks/auth/AuthProvider";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
-  
-
   return (
-    <>
-    <Home/>
-      
-    </>
-  )
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
