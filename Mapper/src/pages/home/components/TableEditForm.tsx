@@ -105,7 +105,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
   }, [keyspace, table, tableDescriptionForm.tags]);
 
   const handleSnackbarClose = (
-    event: React.SyntheticEvent | Event,
+    _event: React.SyntheticEvent | Event,
     reason?: SnackbarCloseReason
   ) => {
     if (reason === "clickaway") {
