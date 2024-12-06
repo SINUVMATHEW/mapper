@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   TextField,
   Typography,
@@ -23,7 +23,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
   const [formData, setFormData] = useState<FormDataProps>({
     name: table || "",
     note: "",
-    tag: ["new"],
+    tag: [" "],
     columns: [],
   });
   
