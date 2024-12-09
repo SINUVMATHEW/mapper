@@ -4,7 +4,6 @@ import theme from "../../../theme/theme";
 import {
   Box,
   Button,
-  TextField,
   Typography,
   SnackbarCloseReason,
   Snackbar,
@@ -25,7 +24,8 @@ const Dashboard: React.FC = () => {
   const [snackbarMessage, setSnackbarMessage] = useState(" ");
 
   if (!keyspace) {
-    return <Box>Loading...</Box>;
+    setLoading(false)
+    setError("error loading table")
   }
 
   const handleAddRelation = () => {
@@ -141,7 +141,7 @@ const Dashboard: React.FC = () => {
             {/* TableEditForm for selected table */}
             {keyspace && (
               <Box sx={{ pb: 3 }}>
-                <TableEditForm keyspace={keyspace} table={table} />
+                {keyspace && table && <TableEditForm keyspace={keyspace} table={table} />}
               </Box>
             )}
 
@@ -163,7 +163,7 @@ const Dashboard: React.FC = () => {
                 />
               )}
             </Box>
-            <NestedFlow keyspace={keyspace} table={table} />
+            {keyspace && table && <NestedFlow keyspace={keyspace} table={table} />}
           </Box>
         </>
       )}

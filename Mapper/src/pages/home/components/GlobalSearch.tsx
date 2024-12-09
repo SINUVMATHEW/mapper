@@ -84,7 +84,7 @@ const GlobalSearch = () => {
     columns,
     data,
 
-    getRowId: (row) => row.column_name_bytes, //or column_names check later
+    getRowId: (row) => row.column_name_bytes,
     manualFiltering: true,
     positionGlobalFilter: "left",
     manualPagination: false, //to prevent from fetching on each pagination
@@ -124,7 +124,7 @@ const GlobalSearch = () => {
       sorting,
     },
     muiTableBodyRowProps: ({ row }) => ({
-      onClick: () => {
+      onDoubleClick: () => {
         const { keyspace_name, table_name } = row.original;
         const openInNewTab = (keyspace: string, table: string) => {
           const url = `/dashboard/${keyspace}/${table}`;

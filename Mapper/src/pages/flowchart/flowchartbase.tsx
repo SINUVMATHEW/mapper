@@ -89,6 +89,7 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
       }
     };
     getColumnData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyspace, table]);
 
   useEffect(() => {
@@ -149,6 +150,7 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
       }
     };
     fetchRelations();
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyspace, table]);
 
   useEffect(() => {
@@ -206,6 +208,7 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
     };
 
     fetchNodesForRelations();
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueFromKeyspaceTables]);
 
   const onConnect: OnConnect = (connection: import("@xyflow/system").Connection) => {

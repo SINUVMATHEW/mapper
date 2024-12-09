@@ -114,6 +114,7 @@ const Home = () => {
     if (isSuccess) {
       setSnackbarMessage("Relation saved successfully!");
       setSnackbarOpen(true);
+      setSelectedTable(selectedTable);
     } else {
       alert("Error saving Relation!");
     }
@@ -174,6 +175,8 @@ const Home = () => {
                 justifyContent: "space-between",
               }}
             >
+              
+
               <Select
                 value={selectedKeyspace}
                 onChange={(e) => setSelectedKeyspace(e.target.value)}
@@ -182,6 +185,7 @@ const Home = () => {
                 fullWidth
                 sx={{ flex: 1 }}
               >
+                
                 {keyspaces.map((keyspace) => (
                   <MenuItem key={keyspace} value={keyspace}>
                     {keyspace}
