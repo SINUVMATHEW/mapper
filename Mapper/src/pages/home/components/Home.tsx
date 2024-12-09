@@ -9,7 +9,6 @@ import {
   Autocomplete,
   TextField,
   Typography,
-  Skeleton,
   SnackbarCloseReason,
   Snackbar,
   Alert,
@@ -22,6 +21,7 @@ import axios from "axios";
 import GlobalSearch from "./GlobalSearch";
 import { fetchKeyspaces, fetchTables } from "../../../services/api/CommonApi";
 import { baseUrl } from "../../../services/api/BaseUrl";
+import { HomePageSkelton } from "./HomePageSkelton";
 const Home = () => {
   const [keyspaces, setKeyspaces] = useState([]);
   const [tables, setTables] = useState<string[]>([]);
@@ -114,6 +114,7 @@ const Home = () => {
     if (isSuccess) {
       setSnackbarMessage("Relation saved successfully!");
       setSnackbarOpen(true);
+      setSelectedTable(selectedTable);
     } else {
       alert("Error saving Relation!");
     }
@@ -151,23 +152,7 @@ const Home = () => {
       {loading ? (
         <Box>
           <Typography align="center">{error}</Typography>
-          <Box
-            sx={{
-              display: "flex",
-              alignContent: "center",
-              justifyContent: "space-between",
-              padding: 2,
-            }}
-          >
-            <Skeleton variant="rectangular" width={"40%"} height={40} />
-            <Skeleton variant="rectangular" width={"40%"} height={40} />
-            <Skeleton variant="rectangular" width={"10%"} height={40} />
-          </Box>
-          <Skeleton animation="wave" />
-          <Skeleton animation="wave" />
-          <Skeleton animation="wave" />
-          <Skeleton variant="rectangular" width={"100%"} height={200} />
-          {/* <CircularProgress color="primary" /> */}
+          <HomePageSkelton/>
         </Box>
       ) : (
         <>
@@ -190,6 +175,8 @@ const Home = () => {
                 justifyContent: "space-between",
               }}
             >
+              
+
               <Select
                 value={selectedKeyspace}
                 onChange={(e) => setSelectedKeyspace(e.target.value)}
@@ -198,6 +185,7 @@ const Home = () => {
                 fullWidth
                 sx={{ flex: 1 }}
               >
+                
                 {keyspaces.map((keyspace) => (
                   <MenuItem key={keyspace} value={keyspace}>
                     {keyspace}
