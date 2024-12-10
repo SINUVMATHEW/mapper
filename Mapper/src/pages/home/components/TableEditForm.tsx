@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   TextField,
   Typography,
@@ -14,7 +14,12 @@ import {
 import Chip from "@mui/material/Chip";
 import { DataGrid, GridRowParams } from "@mui/x-data-grid";
 import Paper from "@mui/material/Paper";
-import { Column, FormDataProps, tableDescriptionFormpProps, TableEditFormProps } from "../interfaces/interfaces";
+import {
+  Column,
+  FormDataProps,
+  tableDescriptionFormpProps,
+  TableEditFormProps,
+} from "../interfaces/interfaces";
 import { columns as dataGridColumns } from "../constants/constants";
 import axios from "axios";
 import { fetchTableData } from "../../../services/api/CommonApi";
@@ -26,7 +31,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
     tag: [" "],
     columns: [],
   });
-  
+
   const [tableTags, setTableTags] = useState([" "]);
   const [tableTagInput, setTableTagInput] = useState("");
   const [editColumnData, setEditColumnData] = useState<Column | null>();
@@ -40,7 +45,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
     tags: "default ",
   });
 
-  const fetchColumns = async () => {
+  const fetchColumns = useCallback(async () => {
     try {
       if (!table) {
         setFormData({
@@ -70,16 +75,19 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
     } catch (error) {
       console.error("Error fetching columns:", error);
     }
-  };
-
-  useEffect(() => {
-    fetchColumns();
   }, [keyspace, table, tableTags]);
 
   useEffect(() => {
-    const fetchTableDescription = async () => {
+    fetchColumns();
+  }, [fetchColumns]);
+
+  useEffect(() => {
+    const fetchTableDescription = async () => {     
+    if (!keyspace || !table) {
+      return; 
+    }
       try {
-        const response = await axios.get(baseUrl+"/get_table_description", {
+        const response = await axios.get(baseUrl + "/get_table_description", {
           params: {
             keyspace_name: keyspace,
             table_name: table,
@@ -128,7 +136,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
       table_name: table,
     };
     try {
-      const response = await axios.put(baseUrl+"/update_table_description", {
+      const response = await axios.put(baseUrl + "/update_table_description", {
         keyspace_name: updatedForm.keyspace_name,
         table_name: updatedForm.table_name,
         tag: updatedForm.tags,
@@ -192,7 +200,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
     };
 
     try {
-      const response = await axios.put(baseUrl+"/update_column_tag", sendData);
+      const response = await axios.put(baseUrl + "/update_column_tag", sendData);
       console.log(response.data);
       handleClose();
       fetchColumns();

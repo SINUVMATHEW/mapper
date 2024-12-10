@@ -152,7 +152,7 @@ const Home = () => {
       {loading ? (
         <Box>
           <Typography align="center">{error}</Typography>
-          <HomePageSkelton/>
+          <HomePageSkelton />
         </Box>
       ) : (
         <>
@@ -175,8 +175,6 @@ const Home = () => {
                 justifyContent: "space-between",
               }}
             >
-              
-
               <Select
                 value={selectedKeyspace}
                 onChange={(e) => setSelectedKeyspace(e.target.value)}
@@ -185,7 +183,6 @@ const Home = () => {
                 fullWidth
                 sx={{ flex: 1 }}
               >
-                
                 {keyspaces.map((keyspace) => (
                   <MenuItem key={keyspace} value={keyspace}>
                     {keyspace}

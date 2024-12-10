@@ -40,18 +40,14 @@ const GlobalSearch = () => {
     const fetchData = async () => {
       setIsLoading(true);
       setIsRefetching(true);
-
       try {
         const url = new URL(baseUrl + "/filtered_data");
         url.searchParams.set("search", globalFilter || "");
         const response = await fetch(url.href);
-
         if (!response.ok) {
           throw new Error(`API Error: ${response.statusText}`);
         }
-
         const json = await response.json();
-
         if (json && Array.isArray(json)) {
           setData(json);
         } else {
@@ -67,7 +63,7 @@ const GlobalSearch = () => {
       }
     };
     fetchData();
-  }, [globalFilter, pagination.pageSize, sorting]);
+  }, [globalFilter]);
 
   const columns = useMemo<MRT_ColumnDef<CustomData>[]>(
     () => [
