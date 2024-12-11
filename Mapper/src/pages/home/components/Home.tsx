@@ -19,41 +19,60 @@ import NestedFlow from "../../flowchart/flowchartbase";
 import { IoMdCloudUpload } from "react-icons/io";
 import axios from "axios";
 import GlobalSearch from "./GlobalSearch";
-import { fetchKeyspaces, fetchTables } from "../../../services/api/CommonApi";
+import { fetchTables } from "../../../services/api/CommonApi";
 import { baseUrl } from "../../../services/api/BaseUrl";
 import { HomePageSkelton } from "./HomePageSkelton";
+import useKeyspaceStore from "../../../store/store";
 const Home = () => {
-  const [keyspaces, setKeyspaces] = useState([]);
+  // const [keyspaces, setKeyspaces] = useState([]);
   const [tables, setTables] = useState<string[]>([]);
-  const [selectedKeyspace, setSelectedKeyspace] = useState("");
+  // const [selectedKeyspace, setSelectedKeyspace] = useState("");
   const [selectedTable, setSelectedTable] = useState("");
   const [openPopup, setOpenPopup] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState(" ");
+  const { keyspaces, selectedKeyspace, fetchKeyspaces ,setSelectedKeyspace } = useKeyspaceStore();
+
+useEffect(() => {
+  const loadKeyspaces = async () => {
+    try {
+      await fetchKeyspaces(); 
+            setLoading(false);
+    } catch (error) {
+      console.error("Error fetching keyspaces", error);
+      setError(String(error));
+      setLoading(true);
+    }
+  };
+
+  loadKeyspaces();
+}, [fetchKeyspaces]);
+
 
   // fetching keyspaces
-  useEffect(() => {
-    const getKeyspaces = async () => {
-      try {
-        const keyspaces = await fetchKeyspaces();
-        setKeyspaces(keyspaces);
-        if (keyspaces.length > 0) {
-          setSelectedKeyspace(keyspaces[0]);
-        }
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching roles:", error);
-        setError(String(error));
-        setLoading(true);
-      }
-    };
-    getKeyspaces();
-  }, []);
+  // useEffect(() => {
+  //   const getKeyspaces = async () => {
+  //     try {
+  //       const keyspaces = await fetchKeyspaces();
+  //       setKeyspaces(keyspaces);
+  //       if (keyspaces.length > 0) {
+  //         setSelectedKeyspace(keyspaces[0]);
+  //       }
+  //       setLoading(false);
+  //     } catch (error) {
+  //       console.error("Error fetching roles:", error);
+  //       setError(String(error));
+  //       setLoading(true);
+  //     }
+  //   };
+  //   getKeyspaces();
+  // }, []);
 
   // fetching tables
+
   useEffect(() => {
     const getTableNames = async () => {
       if (!selectedKeyspace) return;
@@ -144,7 +163,6 @@ const Home = () => {
       alert("Error uploading file. Please try again.");
     }
   };
-
   console.log(error);
 
   return (
