@@ -52,7 +52,11 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
 
   useEffect(() => {
     // create base node for from table
+
     const getColumnData = async () => {
+      if (!keyspace || !table) {
+        return;
+      }
       try {
         const tableData = await fetchTableData(keyspace, table);
         // to set the id of parent node
@@ -95,6 +99,9 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
   useEffect(() => {
     // Fetch the relations
     const fetchRelations = async () => {
+      if (!keyspace || !table) {
+        return;
+      }
       try {
         const response = await fetch(
           baseUrl + `/get_relations?from_keyspace=${keyspace}&from_table=${table}`
@@ -107,9 +114,6 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
           // setRelations([]);
           uniqueFromKeyspaceTables = null;
         } else {
-          // setRelations(data);
-          console.log("Relations fetched", data);
-
           // Function to get unique from_keyspace.from_table combinations
           const getUniqueFromKeyspaceTable = (relations: Relation[]) => {
             const uniqueCombinations = new Set<string>();
@@ -122,7 +126,6 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
 
           // Call the function with the fetched data
           uniqueFromKeyspaceTables = getUniqueFromKeyspaceTable(data);
-          console.log("Unique combinations:", uniqueFromKeyspaceTables);
 
           // Build the edges
           const newEdges = data.map((relation: Relation) => {
@@ -144,13 +147,12 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
         }
         // Use uniqueFromKeyspaceTables as needed
         setUniqueFromKeyspaceTables(uniqueFromKeyspaceTables);
-        console.log("UniqueFromKeyspaceTables:", uniqueFromKeyspaceTables);
       } catch (error) {
         console.error("Error fetching relations:", error);
       }
     };
     fetchRelations();
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyspace, table]);
 
   useEffect(() => {
@@ -208,7 +210,7 @@ const NestedFlow: React.FC<NestedFlowProps> = ({ keyspace, table }) => {
     };
 
     fetchNodesForRelations();
-     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uniqueFromKeyspaceTables]);
 
   const onConnect: OnConnect = (connection: import("@xyflow/system").Connection) => {

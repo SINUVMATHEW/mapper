@@ -1,6 +1,7 @@
 import axios from "axios";
 import { baseUrl } from "./BaseUrl";
 
+//fetch all keyspaces
 export const fetchKeyspaces = async () => {
   try {
     const response = await axios.get(baseUrl + "/keyspace_names");
@@ -12,6 +13,7 @@ export const fetchKeyspaces = async () => {
   }
 };
 
+// fetch all tables of a given keyspace 
 export const fetchTables = async (selectedKeyspace :string) => {
   try {
     const response = await axios.get(baseUrl + `/table_names?keyspace_name=${selectedKeyspace}`);
@@ -23,6 +25,7 @@ export const fetchTables = async (selectedKeyspace :string) => {
   }
 };
 
+// fetch all columns of a given table 
 export const fetchTableData = async (from_keyspace :string, from_table:string) => {
   try {
     const tableData = await axios.get(baseUrl + `/get_columns?keyspace_name=${from_keyspace}&table_name=${from_table}`);

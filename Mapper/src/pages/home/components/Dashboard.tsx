@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "../../../theme/theme";
-import {
-  Box,
-  Button,
-  Typography,
-  SnackbarCloseReason,
-  Snackbar,
-  Alert,
-} from "@mui/material";
+import { Box, Button, Typography, SnackbarCloseReason, Snackbar, Alert } from "@mui/material";
 import TableEditForm from "./TableEditForm";
 import AddRelationPopUp from "./AddRelationPopUp";
 import NestedFlow from "../../flowchart/flowchartbase";
@@ -24,8 +17,8 @@ const Dashboard: React.FC = () => {
   const [snackbarMessage, setSnackbarMessage] = useState(" ");
 
   if (!keyspace) {
-    setLoading(false)
-    setError("error loading table")
+    setLoading(false);
+    setError("error loading table");
   }
 
   const handleAddRelation = () => {
@@ -118,7 +111,7 @@ const Dashboard: React.FC = () => {
                   flex: 1,
                   bgcolor: "#2A3B85",
                   color: "#c8dffd",
-                  borderRadius: 2, 
+                  borderRadius: 2,
                   p: 1,
                   textAlign: "center",
                   fontSize: "1rem",
