@@ -23,10 +23,10 @@ import { fetchTables } from "../../../services/api/CommonApi";
 import { baseUrl } from "../../../services/api/BaseUrl";
 import { HomePageSkelton } from "./HomePageSkelton";
 import useKeyspaceStore from "../../../store/store";
+import relationBgImage from "../../../assets/relation bg.jpg";
+
 const Home = () => {
-  // const [keyspaces, setKeyspaces] = useState([]);
   const [tables, setTables] = useState<string[]>([]);
-  // const [selectedKeyspace, setSelectedKeyspace] = useState("");
   const [selectedTable, setSelectedTable] = useState("");
   const [openPopup, setOpenPopup] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -34,23 +34,22 @@ const Home = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState(" ");
-  const { keyspaces, selectedKeyspace, fetchKeyspaces ,setSelectedKeyspace } = useKeyspaceStore();
+  const { keyspaces, selectedKeyspace, fetchKeyspaces, setSelectedKeyspace } = useKeyspaceStore();
 
-useEffect(() => {
-  const loadKeyspaces = async () => {
-    try {
-      await fetchKeyspaces(); 
-            setLoading(false);
-    } catch (error) {
-      console.error("Error fetching keyspaces", error);
-      setError(String(error));
-      setLoading(true);
-    }
-  };
+  useEffect(() => {
+    const loadKeyspaces = async () => {
+      try {
+        await fetchKeyspaces();
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching keyspaces", error);
+        setError(String(error));
+        setLoading(true);
+      }
+    };
 
-  loadKeyspaces();
-}, [fetchKeyspaces]);
-
+    loadKeyspaces();
+  }, [fetchKeyspaces]);
 
   // fetching keyspaces
   // useEffect(() => {
@@ -250,22 +249,46 @@ useEffect(() => {
             )}
 
             {/* Button and Popup for Adding Relations */}
-            <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-              <Button
-                variant="contained"
-                color="secondary"
-                size="small"
-                onClick={handleAddRelation}
-                sx={{ margin: 3 }}
-              >
-                Add Relation
-              </Button>
-              {openPopup && (
-                <AddRelationPopUp
-                  onClose={handleClosePopup}
-                  onSave={() => handleRelationSave(true)}
-                />
-              )}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+                border: 1,
+                borderRadius: 2,
+                backgroundImage: `url(${relationBgImage})`,
+                backgroundSize: "cover",
+                backgroundBlendMode: "overlay", 
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                // backgroundPosition: "center",
+                padding: 1,
+                marginBottom: 3,
+              }}
+            >
+              <Box sx={{ display: "flex", justifyContent: "flex-start", paddingLeft: 3 }}>
+                <Button
+                  variant="contained"
+                  // size="small"
+                  onClick={handleAddRelation}
+                  sx={{
+                    margin: 3,
+                    color: "black",
+                    backgroundColor: "white",
+                    "&:hover": {
+                      backgroundColor: "#1979B3",
+                      color: "white",
+                    },
+                  }}
+                >
+                  Add Relation
+                </Button>
+                {openPopup && (
+                  <AddRelationPopUp
+                    onClose={handleClosePopup}
+                    onSave={() => handleRelationSave(true)}
+                  />
+                )}
+              </Box>
             </Box>
             <NestedFlow keyspace={selectedKeyspace} table={selectedTable} />
           </Box>

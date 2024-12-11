@@ -1,4 +1,3 @@
-import React from 'react';
 import LoginPageImage from '../../assets/Login Page Side Image.png'
 
 const LoginPageSideImage: React.FC = () => {

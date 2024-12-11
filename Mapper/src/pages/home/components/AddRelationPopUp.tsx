@@ -14,12 +14,14 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { AddRelationPopUpProps, Column } from "../interfaces/interfaces";
-import { fetchKeyspaces, fetchTableData, fetchTables } from "../../../services/api/CommonApi";
+import { fetchTableData, fetchTables } from "../../../services/api/CommonApi";
 import axios from "axios";
 import { baseUrl } from "../../../services/api/BaseUrl";
+import useKeyspaceStore from "../../../store/store";
+
 
 const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) => {
-  const [keyspaces, setKeyspaces] = useState([]);
+  // const [keyspaces, setKeyspaces] = useState([]);
   const [fromTables, setFromTables] = useState([]);
   const [fromColumns, setFromColumns] = useState([]);
   const [toTables, setToTables] = useState([]);
@@ -34,26 +36,26 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) 
     to_column: "",
     is_published: false,
   });
+  const { keyspaces, selectedKeyspace, fetchKeyspaces } = useKeyspaceStore();
 
-  //  fetch keyspaces
-  useEffect(() => {
-    const getKeyspaces = async () => {
+   useEffect(() => {
+    const loadKeyspaces = async () => {
       try {
-        const keyspaces = await fetchKeyspaces();
-        setKeyspaces(keyspaces);
-        if (keyspaces.length > 0) {
+        await fetchKeyspaces();
+        if (selectedKeyspace) {
           setFormData((prevFormData) => ({
             ...prevFormData,
-            from_keyspace: keyspaces[0],
-            to_keyspace: keyspaces[0],
+            from_keyspace: selectedKeyspace,
+            // to_keyspace: selectedKeyspace,
           }));
         }
       } catch (error) {
-        console.error("Error fetching roles:", error);
+        console.error("Error fetching keyspaces", error);
       }
     };
-    getKeyspaces();
-  }, []);
+
+    loadKeyspaces();
+  }, [fetchKeyspaces]);
 
   //  fetch from Tables
   useEffect(() => {
