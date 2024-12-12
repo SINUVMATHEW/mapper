@@ -35,7 +35,9 @@ const Home = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState(" ");
   const { keyspaces, selectedKeyspace, fetchKeyspaces, setSelectedKeyspace } = useKeyspaceStore();
+  const [refreshKey, setRefreshKey] = useState(0);
 
+  // fetching keyspaces
   useEffect(() => {
     const loadKeyspaces = async () => {
       try {
@@ -132,7 +134,7 @@ const Home = () => {
     if (isSuccess) {
       setSnackbarMessage("Relation saved successfully!");
       setSnackbarOpen(true);
-      setSelectedTable(selectedTable);
+      setRefreshKey((prevKey) => prevKey + 1);
     } else {
       alert("Error saving Relation!");
     }
@@ -290,7 +292,7 @@ const Home = () => {
                 )}
               </Box>
             </Box>
-            <NestedFlow keyspace={selectedKeyspace} table={selectedTable} />
+            <NestedFlow key={refreshKey} keyspace={selectedKeyspace} table={selectedTable} />
           </Box>
         </>
       )}
