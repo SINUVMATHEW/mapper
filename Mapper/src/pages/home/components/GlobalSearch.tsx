@@ -9,6 +9,7 @@ import {
 } from "material-react-table";
 import { Box, TextField } from "@mui/material";
 import { baseUrl } from "../../../services/api/BaseUrl";
+
 type CustomData = {
   clustering_order: string;
   column_name: string;
@@ -142,7 +143,6 @@ const GlobalSearch = () => {
         type="search"
         id="search-form"
         name="search-form"
-        autoFocus
         fullWidth
         size="small"
         value={globalFilter}
@@ -151,13 +151,28 @@ const GlobalSearch = () => {
           setGlobalFilter(value);
           setIsSearchActive(value !== "");
         }}
-        // onFocus={() => setIsSearchActive(true)}
         placeholder="Global Search"
-        sx={{ paddingBottom: 3 }}
+        sx={{
+          paddingBottom: 0,
+          border: "1px solid #333",
+          borderRadius: 2,
+          "& .MuiOutlinedInput-root": {
+            "& input": {
+              color: "#fff",
+            },
+            "& input::placeholder": {
+              color: "rgba(255, 255, 255, 1)",
+              opacity: 0.8,
+            },
+            "& input::before": {
+              content: `'🔍 '`,
+            },
+          },
+        }}
       />
 
       {isSearchActive && (
-        <Box style={{ height: "500px", overflowY: "auto", paddingBottom: 10 }}>
+        <Box style={{ height: "500px", overflowY: "auto", paddingBottom: 10, color: "white" }}>
           <MaterialReactTable table={table} />
         </Box>
       )}

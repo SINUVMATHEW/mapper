@@ -24,6 +24,7 @@ import { baseUrl } from "../../../services/api/BaseUrl";
 import { HomePageSkelton } from "./HomePageSkelton";
 import useKeyspaceStore from "../../../store/store";
 import relationBgImage from "../../../assets/relation bg.jpg";
+import searchBgImage from "../../../assets/global search.jpg";
 
 const Home = () => {
   const [tables, setTables] = useState<string[]>([]);
@@ -226,30 +227,73 @@ const Home = () => {
                 fullWidth
                 sx={{ flex: 1 }}
               />
-
-              <Button component="label" variant="contained" startIcon={<IoMdCloudUpload />}>
-                Upload files
-                <input type="file" hidden onChange={handleFileChange} />
-              </Button>
-              {selectedFile && <p>Selected File: {selectedFile.name}</p>}
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleFileUpload}
-                disabled={!selectedFile}
+              <Box
+                sx={{ display: "flex", backgroundColor: "#2A3B85", borderRadius: 2, height: 40 }}
               >
-                Submit File
-              </Button>
+                <Button
+                  component="label"
+                  variant="contained"
+                  size="small"
+                  startIcon={<IoMdCloudUpload />}
+                >
+                  Upload files
+                  {selectedFile && 
+                  <Typography sx={{pl:1, color: "white", fontSize: 10 }}>
+                     Selected File: {selectedFile?.name}
+                  </Typography>}
+                  <input type="file" hidden onChange={handleFileChange} />
+                </Button>
+                
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleFileUpload}
+                  // disabled={!selectedFile}
+                  sx={{
+                    display: "flex",
+                    color: !selectedFile ? "#333" :" #2A3B85",
+                    backgroundColor: !selectedFile ? "#bbbbbb" : "white",
+                    border: "1px solid #2A3B85",
+                    height: 25,
+                    mr: 1,
+                    alignSelf: "center",
+                    "&:hover": {
+                      backgroundColor: !selectedFile ?  "#aa5454" : "primary.dark",
+                      color: !selectedFile ? "white" : "white",
+                      border: !selectedFile ? "1px solid #2A3B85" : "1px solid #ffffff",
+
+                    },
+                  }}
+                >
+                  Submit File
+                </Button>
+              </Box>
             </Box>
             {/* globalsearch */}
-            <GlobalSearch />
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+                border: 1,
+                borderRadius: 2,
+                backgroundImage: `url(${searchBgImage})`,
+                backgroundSize: "cover",
+                backgroundBlendMode: "overlay",
+                backgroundColor: "rgba(0, 0, 0, 0.3)",
+                // backgroundPosition: "center",
+                padding: 1,
+                marginBottom: 3,
+              }}
+            >
+              <GlobalSearch />
+            </Box>
             {/* TableEditForm for selected table */}
             {selectedKeyspace && (
               <Box sx={{ pb: 3 }}>
                 <TableEditForm keyspace={selectedKeyspace} table={selectedTable} />
               </Box>
             )}
-
             {/* Button and Popup for Adding Relations */}
             <Box
               sx={{
@@ -260,7 +304,7 @@ const Home = () => {
                 borderRadius: 2,
                 backgroundImage: `url(${relationBgImage})`,
                 backgroundSize: "cover",
-                backgroundBlendMode: "overlay", 
+                backgroundBlendMode: "overlay",
                 backgroundColor: "rgba(0, 0, 0, 0.5)",
                 // backgroundPosition: "center",
                 padding: 1,

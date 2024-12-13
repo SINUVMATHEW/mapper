@@ -33,7 +33,9 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
   });
 
   const [tableTags, setTableTags] = useState([" "]);
+  const [columnTags, setColumnTags] = useState(["hello", "world"]);
   const [tableTagInput, setTableTagInput] = useState("");
+  const [columnTagInput, setColumnTagInput] = useState("");
   const [editColumnData, setEditColumnData] = useState<Column | null>();
   const [open, setOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -82,10 +84,10 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
   }, [fetchColumns]);
 
   useEffect(() => {
-    const fetchTableDescription = async () => {     
-    if (!keyspace || !table) {
-      return; 
-    }
+    const fetchTableDescription = async () => {
+      if (!keyspace || !table) {
+        return;
+      }
       try {
         const response = await axios.get(baseUrl + "/get_table_description", {
           params: {
@@ -165,14 +167,25 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
   const handleDeleteTableTag = (chipToDelete: string) => {
     setTableTags((chips) => chips.filter((chip) => chip !== chipToDelete));
   };
+  const handleAddColumnTag = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && columnTagInput.trim()) {
+      setColumnTags((prev) => [...prev, columnTagInput.trim()]);
+      setColumnTagInput("");
+      event.preventDefault();
+    }
+  };
+  const handleDeleteColumnTag = (chipToDelete: string) => {
+    setColumnTags((chips) => chips.filter((chip) => chip !== chipToDelete));
+  };
 
-  // Open dialog for editing column ///old was Params data type
+  // Open dialog for editing column //old was Params data type
   const handleRowClick = (params: GridRowParams) => {
     const matchedColumn = formData.columns.find(
       (column) => column.column_name === params.row.column_name
     );
     if (matchedColumn) {
       setEditColumnData({ ...matchedColumn });
+      setColumnTags(matchedColumn.tag.split(",").map((tag) => tag.trim()));
       setOpen(true);
     } else {
       console.error("No matching column found.");
@@ -195,7 +208,7 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
       keyspace_name: keyspace,
       table_name: table,
       column_name: editColumnData?.column_name,
-      tag: editColumnData?.tag || [],
+      tag: String(columnTags),
       note: editColumnData?.note,
     };
 
@@ -294,10 +307,26 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
               value={tableTagInput}
               onChange={(e) => setTableTagInput(e.target.value)}
               onKeyDown={handleAddTableTag}
-              InputProps={{ disableUnderline: true }}
+              slotProps={{
+                input: {
+                  sx: {
+                    marginLeft: "4px",
+                    padding: "0",
+                    width: "100%",
+                  },
+                },
+              }}
               sx={{
                 minWidth: "80px",
-                "& .MuiInputBase-input": { marginLeft: "4px", padding: "0", width: "100%" },
+                "& .MuiInput-underline:before": {
+                  borderBottom: "none",
+                },
+                "& .MuiInput-underline:hover:before": {
+                  borderBottom: "none",
+                },
+                "& .MuiInput-underline:after": {
+                  borderBottom: "none",
+                },
               }}
             />
           </Box>
@@ -341,18 +370,60 @@ const TableEditForm: React.FC<TableEditFormProps> = ({ keyspace, table }) => {
                   maxRows={1}
                   sx={{ width: "50%" }}
                 />
-                {/* Add ChipInput for column tags */}
-
-                <TextField
-                  label="Column tag"
-                  value={editColumnData.tag}
-                  onChange={(e) => handleColumnChange("tag", e.target.value)}
-                  fullWidth
-                  multiline
-                  size="small"
-                  maxRows={1}
-                  sx={{ width: "50%" }}
-                />
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    flexWrap: "wrap",
+                    padding: "0 5px",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    flex: "1 1 35%",
+                    maxHeight: 100,
+                    height: "40px",
+                    overflowY: "auto",
+                  }}
+                >
+                  {columnTags.map((tag, index) => (
+                    <Chip
+                      key={index}
+                      label={tag}
+                      onDelete={() => handleDeleteColumnTag(tag)}
+                      size="small"
+                      sx={{ margin: "2px" }}
+                    />
+                  ))}
+                  <TextField
+                    variant="standard"
+                    placeholder="Add new tag"
+                    size="small"
+                    value={columnTagInput}
+                    onChange={(e) => setColumnTagInput(e.target.value)}
+                    onKeyDown={handleAddColumnTag}
+                    slotProps={{
+                      input: {
+                        sx: {
+                          marginLeft: "4px",
+                          padding: "0",
+                          width: "100%",
+                        },
+                      },
+                    }}
+                    sx={{
+                      minWidth: "80px",
+                      "& .MuiInput-underline:before": {
+                        borderBottom: "none",
+                      },
+                      "& .MuiInput-underline:hover:before": {
+                        borderBottom: "none",
+                      },
+                      "& .MuiInput-underline:after": {
+                        borderBottom: "none",
+                      },
+                    }}
+                  />
+                </Box>
               </Box>
             </DialogContent>
             <DialogActions>

@@ -19,9 +19,7 @@ import axios from "axios";
 import { baseUrl } from "../../../services/api/BaseUrl";
 import useKeyspaceStore from "../../../store/store";
 
-
 const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) => {
-  // const [keyspaces, setKeyspaces] = useState([]);
   const [fromTables, setFromTables] = useState([]);
   const [fromColumns, setFromColumns] = useState([]);
   const [toTables, setToTables] = useState([]);
@@ -38,7 +36,7 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) 
   });
   const { keyspaces, selectedKeyspace, fetchKeyspaces } = useKeyspaceStore();
 
-   useEffect(() => {
+  useEffect(() => {
     const loadKeyspaces = async () => {
       try {
         await fetchKeyspaces();
@@ -46,7 +44,6 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) 
           setFormData((prevFormData) => ({
             ...prevFormData,
             from_keyspace: selectedKeyspace,
-            // to_keyspace: selectedKeyspace,
           }));
         }
       } catch (error) {
@@ -55,6 +52,7 @@ const AddRelationPopUp: React.FC<AddRelationPopUpProps> = ({ onClose, onSave }) 
     };
 
     loadKeyspaces();
+    //eslint-disable-next-line
   }, [fetchKeyspaces]);
 
   //  fetch from Tables

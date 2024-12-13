@@ -17,8 +17,8 @@ export interface Column {
   clustering_order: string;
   kind: string;
   position: number;
-  note?: string | null;
-  tag?: string[];
+  note: string | null;
+  tag: string;
 }
 
 export interface Relation {
